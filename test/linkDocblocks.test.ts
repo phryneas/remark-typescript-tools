@@ -113,7 +113,7 @@ test('parsing multiple sections of a docblock at a nested position', async () =>
 
 test('parsing multiple sections of a docblock at a nested position', async () => {
   const result = await getParser().process(`
-# Infos about Test
+# Infos about Test.nestedFunction
 [summary,remarks](docblock://test/linkDocblocks.test.ts?token=Test.nestedFunction)
 
 # Overload 0
@@ -124,7 +124,7 @@ test('parsing multiple sections of a docblock at a nested position', async () =>
 
 `);
   expect(result.contents).toMatchInlineSnapshot(`
-    "# Infos about Test
+    "# Infos about Test.nestedFunction
 
     This is a function
 

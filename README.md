@@ -1,99 +1,189 @@
-# TSDX User Guide
+# remark-typescript-tools
 
-Congrats! You just saved yourself hours of work by bootstrapping this project with TSDX. Let’s get you oriented with what’s here and how to use it.
+## What is it?
 
-> This TSDX setup is meant for developing libraries (not apps!) that can be published to NPM. If you’re looking to build a Node app, you could use `ts-node-dev`, plain `ts-node`, or simple `tsc`.
+`remark-typescript-tools` contains two remark plugins to use TypeScript code with remark, to generate better documentation.
 
-> If you’re new to TypeScript, checkout [this handy cheatsheet](https://devhints.io/typescript)
+Currently it is aimed at docusaurus, but already pretty configurable. And it's open source, pull requests for more configuration options are always welcome ;)
 
-## Commands
+### transpileCodeblocks
 
-TSDX scaffolds your new library inside `/src`.
+The `transpileCodeblocks` plugin will transpile all your `ts`-typed codeblocks to JavaScript and displays them side-by-side in tabs.
 
-To run TSDX, use:
+So
 
-```bash
-npm start # or yarn start
+````md
+```ts
+import { createAction, createReducer } from '@reduxjs/toolkit';
+
+const increment = createAction<number>('counter/increment');
+const decrement = createAction<number>('counter/decrement');
+
+const counterReducer = createReducer(0, (builder) => {
+  builder.addCase(increment, (state, action) => state + action.payload);
+  builder.addCase(decrement, (state, action) => state - action.payload);
+});
+```
+````
+
+will be rendered to this:
+
+![an animations of tabs switching from TypeScript to JavaScript and back](./assets/tabs.gif)
+
+It will _validate the TypeScript on compilation_, so your docs will be guaranteed to actually be runnable.
+It can even work _against your library source code_, which means that any PR that requires an update to your documentation will already get noticed in CI.
+
+![an image of a compilation error](./assets/compileError.png)
+
+Also, your examples can contain virtual files, importing from each other and you can even hide some of these virtual files, if they are not relevant for the example, but necessary for you to have valid code.
+
+````md
+```ts
+// file: reducers.ts noEmit
+import { Reducer } from '@reduxjs/toolkit';
+declare const rootReducer: Reducer<{}>;
+export default rootReducer;
+
+// file: store.ts
+import { configureStore } from '@reduxjs/toolkit';
+
+import rootReducer from './reducers';
+
+const store = configureStore({ reducer: rootReducer });
+```
+````
+
+### linkDocblocks
+
+This plugin allows you to link to sections of your source code's Docblocks, making sure that your documentation is up-to-date with your code.
+
+So assuming this source code:
+
+````ts
+
+/**
+ * Interface Test!
+ * @remarks
+ * Some more infos.
+ */
+export interface Test {
+  /**
+     * This is a function
+     * @remarks
+     * And it is nested!
+     * @overloadSummary
+     * Also, this is a special overload
+     * @overloadRemarks
+     * With some more description
+     * @param foo - some info about the first parameter
+     * @example
+```ts
+console.log("test")
+````
+
+     */
+
+nestedFunction(foo: string): void;
+/\*\*
+_ This is a function
+_ @remarks
+_ And it is nested!
+_ @overloadSummary
+_ Also, this is a special overload that takes a second parameter
+_ @overloadRemarks
+_ With some more extra description
+_ @param foo - some info about the first parameter
+_ @param bar - and some info about the second parameter
+_ @example
+
+```ts
+console.log('test');
 ```
 
-This builds to `/dist` and runs the project in watch mode so any edits you save inside `src` causes a rebuild to `/dist`.
+     */
 
-To do a one-off build, use `npm run build` or `yarn build`.
-
-To run tests, use `npm test` or `yarn test`.
-
-## Configuration
-
-Code quality is set up for you with `prettier`, `husky`, and `lint-staged`. Adjust the respective fields in `package.json` accordingly.
-
-### Jest
-
-Jest tests are set up to run with `npm test` or `yarn test`.
-
-#### Setup Files
-
-This is the folder structure we set up for you:
-
-```txt
-/src
-  index.tsx       # EDIT THIS
-/test
-  blah.test.tsx   # EDIT THIS
-.gitignore
-package.json
-README.md         # EDIT THIS
-tsconfig.json
-```
-
-### Rollup
-
-TSDX uses [Rollup](https://rollupjs.org) as a bundler and generates multiple rollup configs for various module formats and build settings. See [Optimizations](#optimizations) for details.
-
-### TypeScript
-
-`tsconfig.json` is set up to interpret `dom` and `esnext` types, as well as `react` for `jsx`. Adjust according to your needs.
-
-## Continuous Integration
-
-### GitHub Actions
-
-A simple action is included that runs these steps on all pushes:
-
-- Installs deps w/ cache
-- Lints, tests, and builds
-
-## Optimizations
-
-Please see the main `tsdx` [optimizations docs](https://github.com/palmerhq/tsdx#optimizations). In particular, know that you can take advantage of development-only optimizations:
-
-```js
-// ./types/index.d.ts
-declare var __DEV__: boolean;
-
-// inside your code...
-if (__DEV__) {
-  console.log('foo');
+nestedFunction(foo: string, bar: number): void;
 }
+
+````
+
+the markdown code
+
+```md
+# Infos about Test
+[summary](docblock://test/linkDocblocks.test.ts?token=Test)
+
+## Some more remarks
+[remarks](docblock://test/linkDocblocks.test.ts?token=Test)
+````
+
+would result in
+
+```md
+# Infos about Test
+
+Interface Test!
+
+## Some more remarks
+
+Some more infos.
 ```
 
-You can also choose to install and use [invariant](https://github.com/palmerhq/tsdx#invariant) and [warning](https://github.com/palmerhq/tsdx#warning) functions.
+And you can also link to nested identifiers or function overloads:
 
-## Module Formats
+```md
+# Infos about Test.nestedFunction
 
-CJS, ESModules, and UMD module formats are supported.
+[summary,remarks](docblock://test/linkDocblocks.test.ts?token=Test.nestedFunction)
 
-The appropriate paths are configured in `package.json` and `dist/index.js` accordingly. Please report if any issues are found.
+# Overload 0
 
-## Named Exports
+[overloadSummary,params,overloadRemarks,examples](docblock://test/linkDocblocks.test.ts?token=Test.nestedFunction&overload=0)
 
-Per Palmer Group guidelines, [always use named exports.](https://github.com/palmerhq/typescript#exports) Code split inside your React app instead of your React library.
+# Overload 1
 
-## Including Styles
+[overloadSummary,params,overloadRemarks,examples](docblock://test/linkDocblocks.test.ts?token=Test.nestedFunction&overload=1)
+```
 
-There are many ways to ship styles, including with CSS-in-JS. TSDX has no opinion on this, configure how you like.
+will result in
 
-For vanilla CSS, you can include it at the root directory and add it to the `files` section in your `package.json`, so that it can be imported separately by your users and run through their bundler's loader.
+```md
+# Infos about Test.nestedFunction
 
-## Publishing to NPM
+This is a function
 
-We recommend using [np](https://github.com/sindresorhus/np).
+And it is nested!
+
+# Overload 0
+
+Also, this is a special overload
+
+#### Parameters:
+
+- **foo** some info about the first parameter
+
+With some more description
+
+\`\`\`ts
+console.log(\\"test\\")
+
+\`\`\`
+
+# Overload 1
+
+Also, this is a special overload that takes a second parameter
+
+#### Parameters:
+
+- **foo** some info about the first parameter
+- **bar** and some info about the second parameter
+
+With some more extra description
+
+\`\`\`ts
+console.log(\\"test\\")
+
+\`\`\`
+```
+
+Of course, you can combine this with `transpileCodeblocks`, so your examples from your comments from your source code will be actually type-checked against your source code!
