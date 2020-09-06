@@ -13,7 +13,7 @@ export function postProcessTs(
         name,
         {
           ...file,
-          code: prettyCode,
+          code: prettyCode.trim(),
         },
       ];
     })
@@ -26,16 +26,17 @@ export function postProcessTranspiledJs(
 ): VirtualFiles {
   return fromEntries(
     Object.entries(files).map(([name, file]) => {
-      const mangledCode = file.code
-        .replace(/(\n\s*|)\/\/ (@ts-ignore|@ts-expect-error).*$/gm, '')
-        .trim();
+      const mangledCode = file.code.replace(
+        /(\n\s*|)\/\/ (@ts-ignore|@ts-expect-error).*$/gm,
+        ''
+      );
       const prettyCode = prettify(mangledCode, name, parentFile || name);
 
       return [
         name,
         {
           ...file,
-          code: prettyCode,
+          code: prettyCode.trim(),
         },
       ];
     })

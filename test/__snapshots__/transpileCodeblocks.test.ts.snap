@@ -1,0 +1,108 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`takes "noEmit" files into account for compiling, but does not output them: file1.ts should be missing from this snapshot 1`] = `
+import TabItem from '@theme/TabItem'
+import Tabs from '@theme/Tabs'
+
+    <Tabs
+      groupId="language"
+      defaultValue="ts"
+      values={[
+        { label: 'TypeScript', value: 'ts', },
+        { label: 'JavaScript', value: 'js', },
+      ]}
+    >        
+        <TabItem value="ts">
+\`\`\`ts
+import { testFn } from './file1';
+
+console.log(testFn('foo'));
+\`\`\`
+
+        </TabItem>
+        <TabItem value="js">
+\`\`\`js
+import { testFn } from './file1';
+
+console.log(testFn('foo'));
+\`\`\`
+
+        </TabItem>
+    </Tabs>
+`;
+
+exports[`transpiles codeblocks 1`] = `
+import TabItem from '@theme/TabItem'
+import Tabs from '@theme/Tabs'
+
+    <Tabs
+      groupId="language"
+      defaultValue="ts"
+      values={[
+        { label: 'TypeScript', value: 'ts', },
+        { label: 'JavaScript', value: 'js', },
+      ]}
+    >        
+        <TabItem value="ts">
+\`\`\`ts
+function testFn(arg1: string) {
+  return arg1;
+}
+\`\`\`
+
+        </TabItem>
+        <TabItem value="js">
+\`\`\`js
+function testFn(arg1) {
+  return arg1;
+}
+\`\`\`
+
+        </TabItem>
+    </Tabs>
+`;
+
+exports[`transpiles codeblocks with multiple file definitions 1`] = `
+import TabItem from '@theme/TabItem'
+import Tabs from '@theme/Tabs'
+
+    <Tabs
+      groupId="language"
+      defaultValue="ts"
+      values={[
+        { label: 'TypeScript', value: 'ts', },
+        { label: 'JavaScript', value: 'js', },
+      ]}
+    >        
+        <TabItem value="ts">
+\`\`\`ts
+// file: file1.ts
+export function testFn(arg1: string) {
+  return arg1;
+}
+
+
+// file: file2.ts
+import { testFn } from './file1';
+
+console.log(testFn('foo'));
+\`\`\`
+
+        </TabItem>
+        <TabItem value="js">
+\`\`\`js
+// file: file1.ts
+export function testFn(arg1) {
+  return arg1;
+}
+
+
+// file: file2.ts
+import { testFn } from './file1';
+
+console.log(testFn('foo'));
+\`\`\`
+
+        </TabItem>
+    </Tabs>
+`;

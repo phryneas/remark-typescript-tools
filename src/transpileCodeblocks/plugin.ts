@@ -31,9 +31,9 @@ type PostProcessor = (
 
 export interface Settings {
   compilerSettings: CompilerSettings;
-  postProcessTranspiledJs: PostProcessor;
-  postProcessTs: PostProcessor;
-  assembleReplacementNodes: typeof defaultAssembleReplacementNodes;
+  postProcessTranspiledJs?: PostProcessor;
+  postProcessTs?: PostProcessor;
+  assembleReplacementNodes?: typeof defaultAssembleReplacementNodes;
 }
 
 export const attacher: Plugin<[Settings]> = function ({
@@ -78,50 +78,49 @@ export const attacher: Plugin<[Settings]> = function ({
       if (node.type === 'code') {
         codeBlock++;
       }
-      if (node.type === 'code' && node.lang === 'ts') {
-        const tags = node.meta ? node.meta.split(' ') : [];
-        if (tags.includes('no-transpile')) {
-          return [node];
-        }
+      if (!(node.type === 'code' && node.lang === 'ts')) {
+        return [node];
+      }
+      const tags = node.meta ? node.meta.split(' ') : [];
+      if (tags.includes('no-transpile')) {
+        return [node];
+      }
 
-        const virtualFolder = `${file.path}/codeBlock_${codeBlock}`;
-        const virtualFiles = splitFiles(node.value, virtualFolder);
+      const virtualFolder = `${file.path}/codeBlock_${codeBlock}`;
+      const virtualFiles = splitFiles(node.value, virtualFolder);
 
-        //console.time(virtualFolder)
-        const transpilationResult = compiler.compile(virtualFiles);
-        //console.timeEnd(virtualFolder)
+      //console.time(virtualFolder)
+      const transpilationResult = compiler.compile(virtualFiles);
+      //console.timeEnd(virtualFolder)
 
-        for (const [fileName, result] of Object.entries(transpilationResult)) {
-          for (const diagnostic of result.diagnostics) {
-            if (diagnostic.line && node.position) {
-              file.fail(
-                `
+      for (const [fileName, result] of Object.entries(transpilationResult)) {
+        for (const diagnostic of result.diagnostics) {
+          if (diagnostic.line && node.position) {
+            file.fail(
+              `
 TypeScript error in code block in line ${diagnostic.line} of ${fileName}
 ${diagnostic.message}
             `,
-                {
-                  line: diagnostic.line + node.position.start.line,
-                  column: diagnostic.character,
-                }
-              );
-            } else {
-              file.fail(diagnostic.message, node);
-            }
+              {
+                line: diagnostic.line + node.position.start.line,
+                column: diagnostic.character,
+              }
+            );
+          } else {
+            file.fail(diagnostic.message, node);
           }
         }
-
-        return assembleReplacementNodes(
-          node,
-          file,
-          virtualFolder,
-          virtualFiles,
-          transpilationResult,
-          postProcessTs,
-          postProcessTranspiledJs
-        );
       }
 
-      return [node];
+      return assembleReplacementNodes(
+        node,
+        file,
+        virtualFolder,
+        virtualFiles,
+        transpilationResult,
+        postProcessTs,
+        postProcessTranspiledJs
+      );
     });
   };
 };

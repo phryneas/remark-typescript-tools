@@ -1,5 +1,4 @@
 import ts from 'typescript';
-import path from 'path';
 
 import { VirtualFiles, VirtualFile } from './plugin';
 
@@ -13,8 +12,14 @@ export interface TranspiledFile extends VirtualFile {
 
 export type TranspiledFiles = Record<string, TranspiledFile>;
 
+export interface ExternalResolution {
+  resolvedPath: string;
+  packageId: ts.PackageId;
+}
+
 export interface CompilerSettings {
   tsconfig: string;
+  externalResolutions: Record<string, ExternalResolution>;
 }
 
 export class Compiler {
@@ -30,7 +35,10 @@ export class Compiler {
       './'
     ).options;
 
-    this.compilerHost = createCompilerHost(this.compilerOptions);
+    this.compilerHost = createCompilerHost(
+      this.compilerOptions,
+      settings.externalResolutions
+    );
     this.service = ts.createLanguageService(
       this.compilerHost,
       ts.createDocumentRegistry()
@@ -47,26 +55,29 @@ export class Compiler {
     }
     this.compilerHost.setScriptFileNames(Object.keys(files));
 
-    let returnFiles: TranspiledFiles = {};
+    const returnFiles: TranspiledFiles = {};
 
     for (const [fileName] of Object.entries(files)) {
-      let emitResult = this.service.getEmitOutput(fileName);
-      let transpiledCode = emitResult.outputFiles[0]
-        ? emitResult.outputFiles[0].text.replace(/\/\/__NEWLINE__/g, '')
+      const emitResult = this.service.getEmitOutput(fileName);
+      const emittedFile = emitResult.outputFiles.find(
+        ({ name }) => !name.endsWith('.js.map') && name.endsWith('.js')
+      );
+      const transpiledCode = emittedFile
+        ? emittedFile.text.replace(/\/\/__NEWLINE__/g, '')
         : '';
 
-      let allDiagnostics = this.service
+      const allDiagnostics = this.service
         .getCompilerOptionsDiagnostics()
         .concat(this.service.getSyntacticDiagnostics(fileName))
         .concat(this.service.getSemanticDiagnostics(fileName));
 
       const diagnostics = allDiagnostics.map((diagnostic) => {
-        let message = ts.flattenDiagnosticMessageText(
+        const message = ts.flattenDiagnosticMessageText(
           diagnostic.messageText,
           '\n'
         );
         if (diagnostic.file && diagnostic.start) {
-          let {
+          const {
             line,
             character,
           } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
@@ -86,7 +97,8 @@ export class Compiler {
 }
 
 function createCompilerHost(
-  compilerOptions: ts.CompilerOptions
+  compilerOptions: ts.CompilerOptions,
+  externalResolutions: CompilerSettings['externalResolutions']
 ): ts.LanguageServiceHost &
   ts.ModuleResolutionHost &
   Required<Pick<ts.LanguageServiceHost, 'writeFile'>> & {
@@ -151,11 +163,11 @@ function createCompilerHost(
     },
     resolveModuleNames(moduleNames, containingFile) {
       return moduleNames.map((moduleName) => {
-        if (moduleName === '@reduxjs/toolkit') {
-          moduleName = path.resolve(__dirname, '../../../src');
+        if (moduleName in externalResolutions) {
+          const resolved = externalResolutions[moduleName];
 
           const resolvedModule = ts.resolveModuleName(
-            moduleName,
+            resolved.resolvedPath,
             containingFile,
             compilerOptions,
             this
@@ -165,11 +177,7 @@ function createCompilerHost(
           }
           return {
             ...resolvedModule,
-            packageId: {
-              name: '@reduxjs/toolkit',
-              subModuleName: 'dist/typings.d.ts',
-              version: '99.0.0',
-            },
+            packageId: resolved.packageId,
           };
         }
 
