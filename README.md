@@ -81,21 +81,19 @@ console.log("test")
 ```
      */
   nestedFunction(foo: string): void;
-
   /**
-_ This is a function
-_ @remarks
-_ And it is nested!
-_ @overloadSummary
-_ Also, this is a special overload that takes a second parameter
-_ @overloadRemarks
-_ With some more extra description
-_ @param foo - some info about the first parameter
-_ @param bar - and some info about the second parameter
-_ @example
-
+     * This is a function
+     * @remarks
+     * And it is nested!
+     * @overloadSummary
+     * Also, this is a special overload that takes a second parameter
+     * @overloadRemarks
+     * With some more extra description
+     * @param foo - some info about the first parameter
+     * @param bar - and some info about the second parameter
+     * @example
 ```ts
-console.log('test');
+console.log("test")
 ```
      */
   nestedFunction(foo: string, bar: number): void;
@@ -184,3 +182,106 @@ console.log(\\"test\\")
 ```
 
 Of course, you can combine this with `transpileCodeblocks`, so your examples from your comments from your source code will be actually type-checked against your source code!
+
+## Usage with Docusaurus:
+
+We are using the plugins like this over in `reduxjs/toolkit`:
+
+```js
+// site configuration options.
+const { resolve } = require('path');
+const {
+  linkDocblocks,
+  transpileCodeblocks,
+} = require('remark-typescript-tools');
+
+module.exports = {
+  presets: [
+    [
+      '@docusaurus/preset-classic',
+      {
+        docs: {
+          remarkPlugins: [
+            [
+              linkDocblocks,
+              {
+                extractorSettings: {
+                  tsconfig: resolve(__dirname, '../docs/tsconfig.json'),
+                  basedir: resolve(__dirname, '../src'),
+                  rootFiles: ['index.ts'],
+                },
+              },
+            ],
+            [
+              transpileCodeblocks,
+              {
+                compilerSettings: {
+                  tsconfig: resolve(__dirname, '../docs/tsconfig.json'),
+                  externalResolutions: {
+                    '@reduxjs/toolkit': {
+                      resolvedPath: resolve(__dirname, '../src'),
+                      packageId: {
+                        name: '@reduxjs/toolkit',
+                        subModuleName: 'index.ts',
+                        version: '1.0',
+                      },
+                    },
+                  },
+                },
+              },
+            ],
+          ],
+        },
+      },
+    ],
+  ],
+};
+```
+
+In addition to that, `transpileCodeblocks` takes these options:
+
+```ts
+import type { Node } from 'unist';
+import type { VFile } from 'vfile';
+
+export interface TranspileCodeblocksSettings {
+  compilerSettings: CompilerSettings;
+  postProcessTranspiledJs?: PostProcessor;
+  postProcessTs?: PostProcessor;
+  assembleReplacementNodes?: (
+    node: CodeNode,
+    file: VFile,
+    virtualFolder: string,
+    virtualFiles: Record<string, VirtualFile>,
+    transpilationResult: Record<string, TranspiledFile>,
+    postProcessTs: PostProcessor,
+    postProcessTranspiledJs: PostProcessor
+  ) => Node[];
+}
+
+interface CodeNode extends Node {
+  lang: string;
+  meta: string;
+  value: string;
+  indent: number[];
+}
+
+export interface VirtualFile {
+  code: string;
+  skip?: boolean;
+}
+
+export type VirtualFiles = Record<string, VirtualFile>;
+
+type PostProcessor = (
+  files: VirtualFiles,
+  parentFile?: string,
+  defaultProcessor?: PostProcessor
+) => VirtualFiles;
+
+export interface TranspiledFile extends VirtualFile {
+  diagnostics: Array<Diagnostic>;
+}
+
+export type TranspiledFiles = Record<string, TranspiledFile>;
+```
