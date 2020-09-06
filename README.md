@@ -60,7 +60,6 @@ This plugin allows you to link to sections of your source code's Docblocks, maki
 So assuming this source code:
 
 ````ts
-
 /**
  * Interface Test!
  * @remarks
@@ -79,12 +78,11 @@ export interface Test {
      * @example
 ```ts
 console.log("test")
-````
-
+```
      */
+  nestedFunction(foo: string): void;
 
-nestedFunction(foo: string): void;
-/\*\*
+  /**
 _ This is a function
 _ @remarks
 _ And it is nested!
@@ -99,23 +97,22 @@ _ @example
 ```ts
 console.log('test');
 ```
-
      */
-
-nestedFunction(foo: string, bar: number): void;
+  nestedFunction(foo: string, bar: number): void;
 }
-
 ````
 
 the markdown code
 
 ```md
 # Infos about Test
+
 [summary](docblock://test/linkDocblocks.test.ts?token=Test)
 
 ## Some more remarks
+
 [remarks](docblock://test/linkDocblocks.test.ts?token=Test)
-````
+```
 
 would result in
 
