@@ -37,6 +37,8 @@
   "devDependencies": {
     "@types/prettier": "^2.1.0",
     "husky": "^4.2.5",
+    "remark-parse": "^8.0.3",
+    "remark-stringify": "^8.1.1",
     "tsdx": "^0.13.3",
     "tslib": "^2.0.1",
     "unified": "^9.2.0"

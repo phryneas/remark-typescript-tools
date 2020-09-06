@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import tsdoc from '@microsoft/tsdoc';
+import * as tsdoc from '@microsoft/tsdoc';
 
 /**
  * Retrieves the JSDoc-style comments associated with a specific AST node.
@@ -8,6 +8,7 @@ import tsdoc from '@microsoft/tsdoc';
  * https://github.com/Microsoft/TypeScript/blob/v3.0.3/src/compiler/utilities.ts#L924
  */
 export function getJSDocCommentRanges(node: ts.Node, text: string) {
+  /** @type {import('typescript').CommentRange[]} */
   const commentRanges: ts.CommentRange[] = [];
 
   switch (node.kind) {

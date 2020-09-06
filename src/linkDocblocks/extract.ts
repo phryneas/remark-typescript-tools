@@ -1,6 +1,6 @@
 import ts from 'typescript';
 import path from 'path';
-import tsdoc from '@microsoft/tsdoc';
+import * as tsdoc from '@microsoft/tsdoc';
 
 import { getJSDocCommentRanges } from './utils';
 
@@ -50,10 +50,12 @@ export class Extractor {
   }
 
   getComment(token: string, fileName = 'index.ts', overload = 0) {
-    const inputFileName = path.resolve(this.basedir, 'src', fileName);
+    const inputFileName = path.resolve(this.basedir, fileName);
     const sourceFile = this.program.getSourceFile(inputFileName);
     if (!sourceFile) {
-      throw new Error('Error retrieving source file');
+      throw new Error(
+        `Error retrieving source file ${sourceFile} (looked for ${fileName} in ${this.basedir})`
+      );
     }
 
     const foundComments = [];
