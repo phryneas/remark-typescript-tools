@@ -97,8 +97,8 @@ let x: string = 5
 \`\`\`
 `;
 
-  expect(transform(md)).rejects.toMatchInlineSnapshot(
-    `[/home/weber/tmp/remark-typescript-tools/test/test.mdx:2:1-4:4: Type '5' is not assignable to type 'string'.]`
+  expect(transform(md)).rejects.toContain(
+    `remark-typescript-tools/test/test.mdx:2:1-4:4: Type '5' is not assignable to type 'string'.`
   );
 });
 
@@ -149,12 +149,9 @@ console.log(testFn(5))
 \`\`\`
 `;
 
-  expect(transform(md)).rejects.toMatchInlineSnapshot(`
-    [/home/weber/tmp/remark-typescript-tools/test/test.mdx:4:19: 
-    TypeScript error in code block in line 2 of /home/weber/tmp/remark-typescript-tools/test/test.mdx/codeBlock_1/file2.ts
-    Argument of type '5' is not assignable to parameter of type 'string'.
-                ]
-  `);
+  expect(transform(md)).rejects
+    .toContain(`/remark-typescript-tools/test/test.mdx/codeBlock_1/file2.ts
+    Argument of type '5' is not assignable to parameter of type 'string'.`);
 });
 
 test('takes "noEmit" files into account for compiling, but does not output them', async () => {
@@ -191,10 +188,7 @@ console.log(testFn("foo"))
 \`\`\`
 `;
 
-  expect(transform(md)).rejects.toMatchInlineSnapshot(`
-    [/home/weber/tmp/remark-typescript-tools/test/test.mdx:3:8: 
-    TypeScript error in code block in line 1 of /home/weber/tmp/remark-typescript-tools/test/test.mdx/codeBlock_1/file1.ts
-    Type 'string' is not assignable to type 'number'.
-                ]
-  `);
+  expect(transform(md)).rejects
+    .toContain(`remark-typescript-tools/test/test.mdx/codeBlock_1/file1.ts
+    Type 'string' is not assignable to type 'number'.`);
 });
