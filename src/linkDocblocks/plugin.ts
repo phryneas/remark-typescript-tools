@@ -54,9 +54,8 @@ export const attacher: Plugin<[Settings]> = function ({ extractorSettings }) {
       s.replace(/@overloadRemarks/g, '')
     ),
     examples: renderAsMarkdown('examples', (s) => s.replace(/@example/g, '')),
-    params: renderAsMarkdown(
-      'params',
-      (s) => '#### Parameters:\n' + s.replace(/@param (.*) -/g, '* **$1**')
+    params: renderAsMarkdown('params', (s) =>
+      s.replace(/@param (.*) -/g, '* **$1**')
     ),
   };
 

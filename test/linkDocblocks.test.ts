@@ -134,8 +134,6 @@ test('parsing multiple sections of a docblock at a nested position', async () =>
 
     Also, this is a special overload
 
-    #### Parameters:
-
     -   **foo** some info about the first parameter
 
     With some more description
@@ -148,8 +146,6 @@ test('parsing multiple sections of a docblock at a nested position', async () =>
     # Overload 1
 
     Also, this is a special overload that takes a second parameter
-
-    #### Parameters:
 
     -   **foo** some info about the first parameter
     -   **bar** and some info about the second parameter
