@@ -96,10 +96,18 @@ export const attacher: Plugin<[Settings]> = function ({
       for (const [fileName, result] of Object.entries(transpilationResult)) {
         for (const diagnostic of result.diagnostics) {
           if (diagnostic.line && node.position) {
+            const lines = result.code
+              .split('\n')
+              .map(
+                (line, lineNo) => `${String(lineNo).padStart(3, ' ')}  ${line}`
+              );
+
             file.fail(
               `
 TypeScript error in code block in line ${diagnostic.line} of ${fileName}
 ${diagnostic.message}
+
+${lines.slice(Math.max(0, diagnostic.line - 5), diagnostic.line + 6).join('\n')}
             `,
               {
                 line: diagnostic.line + node.position.start.line,
