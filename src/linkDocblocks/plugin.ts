@@ -4,6 +4,7 @@ import { Extractor, ExtractorSettings } from './extract';
 import { renderDocNode } from './utils';
 import { URL } from 'url';
 import type { Node, Parent } from 'unist';
+import visit from 'unist-util-visit';
 
 import type { Plugin } from 'unified';
 import type { DocNode } from '@microsoft/tsdoc';
@@ -108,6 +109,12 @@ export const attacher: Plugin<[Settings]> = function ({ extractorSettings }) {
         );
         return acc;
       }, []);
+
+      visit<
+        Node & { value: string }
+      >({ type: 'fakeRoot', children: retVal }, 'code', (node) => {
+        node.value = node.value.trimEnd();
+      });
 
       return retVal;
     });

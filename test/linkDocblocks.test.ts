@@ -140,7 +140,6 @@ test('parsing multiple sections of a docblock at a nested position', async () =>
 
     \`\`\`ts
     console.log(\\"test\\")
-
     \`\`\`
 
     # Overload 1
@@ -154,7 +153,6 @@ test('parsing multiple sections of a docblock at a nested position', async () =>
 
     \`\`\`ts
     console.log(\\"test\\")
-
     \`\`\`
     "
   `);
