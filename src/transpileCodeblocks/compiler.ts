@@ -178,7 +178,7 @@ function createCompilerHost(
             this
           ).resolvedModule;
           if (!resolvedModule) {
-            throw new Error('RTK source code not found!');
+            throw new Error(`external resolution ${moduleName} not found`);
           }
           return {
             ...resolvedModule,
