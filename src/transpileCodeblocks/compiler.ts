@@ -1,4 +1,5 @@
 import ts from 'typescript';
+import {normalize} from 'path'
 
 import { VirtualFiles, VirtualFile } from './plugin';
 
@@ -117,15 +118,17 @@ function createCompilerHost(
     },
     fileExists(fileName) {
       // console.log('fileExists', fileName)
-      return !!virtualFiles[fileName] || ts.sys.fileExists(fileName);
+      return !!virtualFiles[normalize(fileName)] || ts.sys.fileExists(fileName);
     },
     readFile(fileName: string) {
       // console.log('readFile', fileName)
-      return virtualFiles[fileName]
-        ? virtualFiles[fileName].contents
+      const virtual = virtualFiles[normalize(fileName)];
+      return virtual
+        ? virtual.contents
         : ts.sys.readFile(fileName);
     },
     writeFile(fileName, contents) {
+      fileName = normalize(fileName)
       let version = virtualFiles[fileName] ? virtualFiles[fileName].version : 1;
       if (
         virtualFiles[fileName] &&
@@ -136,15 +139,16 @@ function createCompilerHost(
       virtualFiles[fileName] = { contents, version };
     },
     directoryExists(dirName) {
+      const normalized = normalize(dirName + '/')
       return (
         scriptFileNames.some((fileName) =>
-          fileName.startsWith(dirName + '/')
+          fileName.startsWith(normalized)
         ) || ts.sys.directoryExists(dirName)
       );
     },
     setScriptFileNames(files) {
-      // console.log({ virtualFiles, files })
-      scriptFileNames = files;
+      scriptFileNames = files.map(normalize);
+      // console.log({ virtualFiles, scriptFileNames })
     },
     getScriptFileNames() {
       return scriptFileNames;
@@ -154,8 +158,9 @@ function createCompilerHost(
       return contents ? ts.ScriptSnapshot.fromString(contents) : undefined;
     },
     getScriptVersion(fileName) {
-      return virtualFiles[fileName]
-        ? virtualFiles[fileName].version.toString()
+      const virtual = virtualFiles[normalize(fileName)];
+      return virtual
+        ? virtual.version.toString()
         : String(
             (ts.sys.getModifiedTime && ts.sys.getModifiedTime(fileName)) ||
               'unknown, will not update without restart'
