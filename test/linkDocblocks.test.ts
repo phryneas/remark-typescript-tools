@@ -43,6 +43,40 @@ console.log("test")
   nestedFunction(foo: string, bar: number): void;
 }
 
+/**
+ * This is an arrow function - outside comment style
+ * @remarks
+ * It's very pointy, but also fat!
+ */
+export const arrowFunction1 = () => {};
+
+export const /**
+   * This is an arrow function - medium comment style
+   * @remarks
+   * It's very pointy, but also fat!
+   */ arrowFunction2 = () => {};
+
+export const arrowFunction3 = /**
+ * This is an arrow function - inside comment style
+ * @remarks
+ * It's very pointy, but also fat!
+ */ () => {};
+
+/**
+ * This is an arrow function - outside comment style
+ * @remarks
+ * This feels less important
+ */
+export const /**
+   * This is an arrow function - medium comment style
+   * @remarks
+   * This feels less important
+   */ arrowFunction4 = /**
+   * This is an arrow function - inside comment style
+   * @remarks
+   * This should take precedence
+   */ () => {};
+
 const defaultSettings: LinkDocblocksSettings = {
   extractorSettings: {
     tsconfig: resolve(__dirname, '..', 'tsconfig.json'),
@@ -154,6 +188,70 @@ test('parsing multiple sections of a docblock at a nested position', async () =>
     \`\`\`ts
     console.log(\\"test\\")
     \`\`\`
+    "
+  `);
+});
+
+test('const arrow function docblock1', async () => {
+  const result = await getParser().process(`
+# Infos about Test
+[summary,remarks](docblock://test/linkDocblocks.test.ts?token=arrowFunction1)
+`);
+
+  expect(result.contents).toMatchInlineSnapshot(`
+    "# Infos about Test
+
+    This is an arrow function - outside comment style
+
+    It's very pointy, but also fat!
+    "
+  `);
+});
+
+test('const arrow function docblock2', async () => {
+  const result = await getParser().process(`
+# Infos about Test
+[summary,remarks](docblock://test/linkDocblocks.test.ts?token=arrowFunction2)
+`);
+
+  expect(result.contents).toMatchInlineSnapshot(`
+    "# Infos about Test
+
+    This is an arrow function - medium comment style
+
+    It's very pointy, but also fat!
+    "
+  `);
+});
+
+test('const arrow function docblock3', async () => {
+  const result = await getParser().process(`
+# Infos about Test
+[summary,remarks](docblock://test/linkDocblocks.test.ts?token=arrowFunction3)
+`);
+
+  expect(result.contents).toMatchInlineSnapshot(`
+    "# Infos about Test
+
+    This is an arrow function - inside comment style
+
+    It's very pointy, but also fat!
+    "
+  `);
+});
+
+test('const arrow function docblock4', async () => {
+  const result = await getParser().process(`
+# Infos about Test
+[summary,remarks](docblock://test/linkDocblocks.test.ts?token=arrowFunction4)
+`);
+
+  expect(result.contents).toMatchInlineSnapshot(`
+    "# Infos about Test
+
+    This is an arrow function - inside comment style
+
+    This should take precedence
     "
   `);
 });

@@ -9,7 +9,7 @@ import visit from 'unist-util-visit';
 import type { Plugin } from 'unified';
 import type { DocNode } from '@microsoft/tsdoc';
 
-type Comment = ReturnType<Extractor['getComment']>;
+type Comment = NonNullable<ReturnType<Extractor['getComment']>>;
 type RenderFunction = (c: Comment) => import('unist').Node[];
 
 type RenderableKey = {
@@ -95,6 +95,9 @@ export const attacher: Plugin<[Settings]> = function ({ extractorSettings }) {
       }
 
       const comment = extractor.getComment(token, fileName, overload);
+      if (!comment) {
+        return [];
+      }
 
       const retVal = sections.reduce<Node[]>((acc, section) => {
         if (!(section in sectionMapping)) {

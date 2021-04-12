@@ -17,6 +17,8 @@ export function getJSDocCommentRanges(node: ts.Node, text: string) {
     case ts.SyntaxKind.FunctionExpression:
     case ts.SyntaxKind.ArrowFunction:
     case ts.SyntaxKind.ParenthesizedExpression:
+    case ts.SyntaxKind.VariableDeclaration:
+    case ts.SyntaxKind.VariableStatement:
       commentRanges.push(
         ...(ts.getTrailingCommentRanges(text, node.pos) || [])
       );

@@ -37,9 +37,25 @@ export class Extractor {
     const [lookFor, ...tail] = token.split('.');
     const found: ts.Node[] = [];
     node.forEachChild((child: ts.Node & { name?: ts.Node }) => {
+      if (ts.isVariableStatement(child)) {
+        found.push(...this.findTokens(token, child.declarationList));
+        if (child.declarationList.declarations.length === 1) {
+          const name = child.declarationList.declarations[0].name;
+          if (name && ts.isIdentifier(name) && name.escapedText === lookFor) {
+            // push the whole declarationList if it contains only one declaration, for "outside style"
+            found.push(child);
+          }
+        }
+        return;
+      }
+
       const name = child.name;
       if (name && ts.isIdentifier(name) && name.escapedText === lookFor) {
         if (lookFor === token) {
+          if (ts.isVariableDeclaration(child) && child.initializer) {
+            // push the initializer for "inside" style
+            found.push(child.initializer);
+          }
           found.push(child);
         } else {
           found.push(...this.findTokens(tail.join('.'), child));
@@ -98,6 +114,12 @@ export class Extractor {
     const tsdocParser = new tsdoc.TSDocParser(customConfiguration);
 
     const selectedOverload = foundComments[overload];
+    if (!selectedOverload) {
+      console.warn(
+        `could not find overload ${overload} for ${token} in ${fileName}`
+      );
+      return null;
+    }
 
     const parserContext = tsdocParser.parseRange(selectedOverload.textRange);
     const docComment = parserContext.docComment;
