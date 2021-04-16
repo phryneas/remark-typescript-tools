@@ -36,6 +36,7 @@
   "module": "dist/remark-typescript-tools.esm.js",
   "devDependencies": {
     "@types/prettier": "^2.1.0",
+    "eslint-plugin-prettier": "3.1.4",
     "husky": "^4.2.5",
     "remark-mdx": "^1.6.16",
     "remark-parse": "^8.0.3",

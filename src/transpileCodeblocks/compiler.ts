@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import {normalize} from 'path'
+import { normalize } from 'path';
 
 import { VirtualFiles, VirtualFile } from './plugin';
 
@@ -123,12 +123,10 @@ function createCompilerHost(
     readFile(fileName: string) {
       // console.log('readFile', fileName)
       const virtual = virtualFiles[normalize(fileName)];
-      return virtual
-        ? virtual.contents
-        : ts.sys.readFile(fileName);
+      return virtual ? virtual.contents : ts.sys.readFile(fileName);
     },
     writeFile(fileName, contents) {
-      fileName = normalize(fileName)
+      fileName = normalize(fileName);
       let version = virtualFiles[fileName] ? virtualFiles[fileName].version : 1;
       if (
         virtualFiles[fileName] &&
@@ -139,11 +137,10 @@ function createCompilerHost(
       virtualFiles[fileName] = { contents, version };
     },
     directoryExists(dirName) {
-      const normalized = normalize(dirName + '/')
+      const normalized = normalize(dirName + '/');
       return (
-        scriptFileNames.some((fileName) =>
-          fileName.startsWith(normalized)
-        ) || ts.sys.directoryExists(dirName)
+        scriptFileNames.some((fileName) => fileName.startsWith(normalized)) ||
+        ts.sys.directoryExists(dirName)
       );
     },
     setScriptFileNames(files) {
