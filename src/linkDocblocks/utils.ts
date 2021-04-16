@@ -50,9 +50,16 @@ export function renderDocNode(
   let result = '';
   if (docNode) {
     if (docNode instanceof tsdoc.DocFencedCode) {
-      return (
-        '```' + docNode.language + '\n' + docNode.code.toString() + '\n```'
+      let code: string = docNode.code.toString();
+      let meta: string = '';
+      code = code.replace(
+        /^\s*\/\/\s*codeblock-meta(\s.*?)$\n?/gm,
+        (_line, metaMatch) => {
+          meta += metaMatch;
+          return '';
+        }
       );
+      return '```' + docNode.language + meta + '\n' + code + '\n```';
     }
     if (docNode instanceof tsdoc.DocExcerpt) {
       result += docNode.content.toString();

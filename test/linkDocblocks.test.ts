@@ -255,3 +255,37 @@ test('const arrow function docblock4', async () => {
     "
   `);
 });
+
+/**
+ * @example
+ * ```ts
+ * // codeblock-meta title=Foo
+ * foo
+ * ```
+ *
+ * ```ts
+ * lalala
+ * // codeblock-meta title=Bar
+ * // codeblock-meta {1,2,3}
+ * foo
+ * ```
+ */
+export function exampleWithDocBlockMeta() {}
+
+test('codeblock-meta comments are removed and added to meta', async () => {
+  const result = await getParser().process(`
+[examples](docblock://test/linkDocblocks.test.ts?token=exampleWithDocBlockMeta)
+`);
+
+  expect(result.contents).toMatchInlineSnapshot(`
+    "\`\`\`ts title=Foo
+    foo
+    \`\`\`
+
+    \`\`\`ts title=Bar {1,2,3}
+    lalala
+    foo
+    \`\`\`
+    "
+  `);
+});
