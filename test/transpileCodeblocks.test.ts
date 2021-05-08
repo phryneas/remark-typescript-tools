@@ -97,7 +97,7 @@ let x: string = 5
 \`\`\`
 `;
 
-  return expect(
+  await expect(
     transform(md).catch((e) => {
       throw e.toString();
     })
@@ -113,7 +113,7 @@ let x: string = 5
 \`\`\`
 `;
 
-  return expect(transform(md)).resolves.toMatchInlineSnapshot(`
+  await expect(transform(md)).resolves.toMatchInlineSnapshot(`
     import TabItem from '@theme/TabItem'
     import Tabs from '@theme/Tabs'
     \`\`\`ts
@@ -153,7 +153,7 @@ console.log(testFn(5))
 \`\`\`
 `;
 
-  return expect(
+  await expect(
     transform(md).catch((e) => {
       throw e.toString();
     })
@@ -196,7 +196,7 @@ console.log(testFn("foo"))
 \`\`\`
 `;
 
-  return expect(
+  await expect(
     transform(md).catch((e) => {
       throw e.toString();
     })
@@ -219,5 +219,5 @@ console.log(testFn("foo"))
 \`\`\`
 `;
 
-  return expect(transform(md)).resolves.toMatchSnapshot();
+  expect(await transform(md)).toMatchSnapshot();
 });
