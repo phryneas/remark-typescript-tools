@@ -191,7 +191,7 @@ function defaultAssembleReplacementNodes(
 }
 
 function splitFiles(fullCode: string, folder: string) {
-  const regex = /^\/\/ file: ([\w./]+)(?: (.*))?\s*$/gm;
+  const regex = /^\/\/ file: ([\w\-./]+)(?: (.*))?\s*$/gm;
   let match = regex.exec(fullCode);
 
   let files: VirtualFiles = {};

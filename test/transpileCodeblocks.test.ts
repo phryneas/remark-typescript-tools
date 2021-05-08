@@ -97,7 +97,7 @@ let x: string = 5
 \`\`\`
 `;
 
-  expect(
+  await expect(
     transform(md).catch((e) => {
       throw e.toString();
     })
@@ -113,7 +113,7 @@ let x: string = 5
 \`\`\`
 `;
 
-  expect(transform(md)).resolves.toMatchInlineSnapshot(`
+  await expect(transform(md)).resolves.toMatchInlineSnapshot(`
     import TabItem from '@theme/TabItem'
     import Tabs from '@theme/Tabs'
     \`\`\`ts
@@ -153,7 +153,7 @@ console.log(testFn(5))
 \`\`\`
 `;
 
-  expect(
+  await expect(
     transform(md).catch((e) => {
       throw e.toString();
     })
@@ -196,11 +196,28 @@ console.log(testFn("foo"))
 \`\`\`
 `;
 
-  expect(
+  await expect(
     transform(md).catch((e) => {
       throw e.toString();
     })
   ).rejects
     .toContain(`remark-typescript-tools/test/test.mdx/codeBlock_1/file1.ts
 Type 'string' is not assignable to type 'number'.`);
+});
+
+test('supports hyphens & periods in filenames', async () => {
+  const md = `
+\`\`\`ts
+// file: file-one.stuff.ts noEmit
+export function testFn(arg1: string) {
+    return arg1;
+}
+// file: file2.ts
+import { testFn } from './file-one.stuff'
+
+console.log(testFn("foo"))
+\`\`\`
+`;
+
+  expect(await transform(md)).toMatchSnapshot();
 });
