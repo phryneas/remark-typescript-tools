@@ -221,3 +221,35 @@ console.log(testFn("foo"))
 
   expect(await transform(md)).toMatchSnapshot();
 });
+export const someNumber = 5 as const;
+
+describe('imports defined via compilerOptions.paths', () => {
+  test('import', async () => {
+    const md = `
+\`\`\`ts
+// file: file1.ts
+import { someNumber } from "@transpileCodeblocksTest"
+const n: number = someNumber;
+// file: file2.ts
+import { someNumber } from "@test/transpileCodeblocks.test"
+const n: number = someNumber;
+\`\`\`
+`;
+    expect(await transform(md)).toMatchSnapshot();
+  });
+  test('import with errors', async () => {
+    const md = `
+\`\`\`ts
+import { someNumber } from "@test/transpileCodeblocks.test"
+const n: string = someNumber;
+\`\`\`
+`;
+    await expect(
+      transform(md).catch((e) => {
+        throw e.toString();
+      })
+    ).rejects
+      .toContain(`remark-typescript-tools/test/test.mdx/codeBlock_1/index.ts
+Type '5' is not assignable to type 'string'.`);
+  });
+});

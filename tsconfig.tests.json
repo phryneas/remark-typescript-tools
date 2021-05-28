@@ -13,6 +13,11 @@
     "removeComments": false,
     "module": "ESNext",
     "target": "ESNext",
-    "alwaysStrict": false
+    "alwaysStrict": false,
+    "baseUrl": ".",
+    "paths": {
+      "@transpileCodeblocksTest": ["test/transpileCodeblocks.test.ts"],
+      "@test/*": ["test/*"]
+    }
   }
 }

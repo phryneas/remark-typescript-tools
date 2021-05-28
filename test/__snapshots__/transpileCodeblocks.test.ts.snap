@@ -1,5 +1,46 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`imports defined via compilerOptions.paths import 1`] = `
+import TabItem from '@theme/TabItem'
+import Tabs from '@theme/Tabs'
+
+    <Tabs
+      groupId="language"
+      defaultValue="ts"
+      values={[
+        { label: 'TypeScript', value: 'ts', },
+        { label: 'JavaScript', value: 'js', },
+      ]}
+    >        
+        <TabItem value="ts">
+\`\`\`ts
+// file: file1.ts
+import { someNumber } from '@transpileCodeblocksTest';
+const n: number = someNumber;
+
+
+// file: file2.ts
+import { someNumber } from '@test/transpileCodeblocks.test';
+const n: number = someNumber;
+\`\`\`
+
+        </TabItem>
+        <TabItem value="js">
+\`\`\`js
+// file: file1.ts
+import { someNumber } from '@transpileCodeblocksTest';
+const n = someNumber;
+
+
+// file: file2.ts
+import { someNumber } from '@test/transpileCodeblocks.test';
+const n = someNumber;
+\`\`\`
+
+        </TabItem>
+    </Tabs>
+`;
+
 exports[`supports hyphens & periods in filenames 1`] = `
 import TabItem from '@theme/TabItem'
 import Tabs from '@theme/Tabs'
@@ -23,37 +64,6 @@ console.log(testFn('foo'));
         <TabItem value="js">
 \`\`\`js
 import { testFn } from './file-one.stuff';
-
-console.log(testFn('foo'));
-\`\`\`
-
-        </TabItem>
-    </Tabs>
-`;
-
-exports[`takes "noEmit" files into account for compiling, but does not output them: file1.ts should be missing from this snapshot 1`] = `
-import TabItem from '@theme/TabItem'
-import Tabs from '@theme/Tabs'
-
-    <Tabs
-      groupId="language"
-      defaultValue="ts"
-      values={[
-        { label: 'TypeScript', value: 'ts', },
-        { label: 'JavaScript', value: 'js', },
-      ]}
-    >        
-        <TabItem value="ts">
-\`\`\`ts
-import { testFn } from './file1';
-
-console.log(testFn('foo'));
-\`\`\`
-
-        </TabItem>
-        <TabItem value="js">
-\`\`\`js
-import { testFn } from './file1';
 
 console.log(testFn('foo'));
 \`\`\`
