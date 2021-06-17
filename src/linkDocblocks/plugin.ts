@@ -22,8 +22,13 @@ export interface Settings {
   extractorSettings: ExtractorSettings;
 }
 
+const extractors = new WeakMap<ExtractorSettings, Extractor>();
+
 export const attacher: Plugin<[Settings]> = function ({ extractorSettings }) {
-  const extractor = new Extractor(extractorSettings);
+  if (!extractors.has(extractorSettings)) {
+    extractors.set(extractorSettings, new Extractor(extractorSettings));
+  }
+  const extractor = extractors.get(extractorSettings)!;
 
   const parseNodes = (markdown: string): Node[] => {
     return (this.parse(markdown) as Parent).children;

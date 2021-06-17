@@ -36,13 +36,18 @@ export interface Settings {
   assembleReplacementNodes?: typeof defaultAssembleReplacementNodes;
 }
 
+const compilers = new WeakMap<CompilerSettings, Compiler>();
+
 export const attacher: Plugin<[Settings]> = function ({
   compilerSettings,
   postProcessTranspiledJs = defaultPostProcessTranspiledJs,
   postProcessTs = defaultPostProcessTs,
   assembleReplacementNodes = defaultAssembleReplacementNodes,
 }) {
-  const compiler = new Compiler(compilerSettings);
+  if (!compilers.has(compilerSettings)) {
+    compilers.set(compilerSettings, new Compiler(compilerSettings));
+  }
+  const compiler = compilers.get(compilerSettings)!;
 
   return function transformer(tree, file) {
     if (file.extname !== '.mdx') {
