@@ -61,7 +61,7 @@ export class Compiler {
     for (const [fileName] of Object.entries(files)) {
       const emitResult = this.service.getEmitOutput(fileName);
       const emittedFile = emitResult.outputFiles.find(
-        ({ name }) => !name.endsWith('.js.map') && name.endsWith('.js')
+        ({ name }) => name.endsWith('.js') || name.endsWith('.jsx')
       );
       const transpiledCode = emittedFile
         ? emittedFile.text.replace(/\/\/__NEWLINE__/g, '')

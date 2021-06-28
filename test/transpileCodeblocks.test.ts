@@ -253,3 +253,16 @@ const n: string = someNumber;
 Type '5' is not assignable to type 'string'.`);
   });
 });
+
+test('transpiles jsx', async () => {
+  const md = `
+\`\`\`ts
+// file: file2.tsx
+import React from 'react';
+
+console.log(<div>asd</div>)
+\`\`\`
+`;
+
+  expect(await transform(md)).toMatchSnapshot();
+});
