@@ -43,6 +43,7 @@ export const attacher: Plugin<[Settings]> = function ({
   postProcessTranspiledJs = defaultPostProcessTranspiledJs,
   postProcessTs = defaultPostProcessTs,
   assembleReplacementNodes = defaultAssembleReplacementNodes,
+  fileExtensions = ['.mdx']
 }) {
   if (!compilers.has(compilerSettings)) {
     compilers.set(compilerSettings, new Compiler(compilerSettings));
@@ -50,7 +51,7 @@ export const attacher: Plugin<[Settings]> = function ({
   const compiler = compilers.get(compilerSettings)!;
 
   return function transformer(tree, file) {
-    if (file.extname !== '.mdx') {
+    if (!fileExtensions.includes(file.extname)) {
       return tree;
     }
 
