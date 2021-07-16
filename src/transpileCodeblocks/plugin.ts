@@ -34,6 +34,7 @@ export interface Settings {
   postProcessTranspiledJs?: PostProcessor;
   postProcessTs?: PostProcessor;
   assembleReplacementNodes?: typeof defaultAssembleReplacementNodes;
+  fileExtensions?: string[];
 }
 
 const compilers = new WeakMap<CompilerSettings, Compiler>();
@@ -43,7 +44,7 @@ export const attacher: Plugin<[Settings]> = function ({
   postProcessTranspiledJs = defaultPostProcessTranspiledJs,
   postProcessTs = defaultPostProcessTs,
   assembleReplacementNodes = defaultAssembleReplacementNodes,
-  fileExtensions = ['.mdx']
+  fileExtensions = ['.mdx'],
 }) {
   if (!compilers.has(compilerSettings)) {
     compilers.set(compilerSettings, new Compiler(compilerSettings));
@@ -51,7 +52,7 @@ export const attacher: Plugin<[Settings]> = function ({
   const compiler = compilers.get(compilerSettings)!;
 
   return function transformer(tree, file) {
-    if (!fileExtensions.includes(file.extname)) {
+    if (!file.extname || !fileExtensions.includes(file.extname)) {
       return tree;
     }
 
