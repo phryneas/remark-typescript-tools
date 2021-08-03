@@ -21,6 +21,12 @@ export interface ExternalResolution {
 export interface CompilerSettings {
   tsconfig: string;
   externalResolutions: Record<string, ExternalResolution>;
+  /**
+   * Allows transforming the virtual filepath for codeblocks.
+   * This allows the files to resolve node modules from a different location
+   * to their own directory.
+   */
+  transformVirtualFilepath?: (filepath: string) => string;
 }
 
 export class Compiler {
