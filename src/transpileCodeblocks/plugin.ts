@@ -56,6 +56,9 @@ export const attacher: Plugin<[Settings]> = function ({
       return tree;
     }
 
+    const virtualFilepath =
+      compilerSettings.transformVirtualFilepath?.(file.path ?? '') ?? file.path;
+
     let hasTabsImport = false;
     let hasTabItemImport = false;
 
@@ -93,7 +96,7 @@ export const attacher: Plugin<[Settings]> = function ({
         return [node];
       }
 
-      const virtualFolder = `${file.path}/codeBlock_${codeBlock}`;
+      const virtualFolder = `${virtualFilepath}/codeBlock_${codeBlock}`;
       const virtualFiles = splitFiles(node.value, virtualFolder);
 
       //console.time(virtualFolder)

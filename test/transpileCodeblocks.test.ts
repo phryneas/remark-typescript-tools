@@ -44,8 +44,7 @@ function getParser(settings = defaultSettings) {
     .use(remarkStringify);
 }
 
-function transform(md: string) {
-  const parser = getParser();
+function transform(md: string, parser = getParser()) {
   return parser.run(parser.parse(md), {
     path: __dirname + '/test.mdx',
   });
@@ -265,4 +264,38 @@ console.log(<div>asd</div>)
 `;
 
   expect(await transform(md)).toMatchSnapshot();
+});
+
+test('transforms virtual filepath', async () => {
+  const md = `
+  \`\`\`ts
+  // file: file1.ts
+  export function testFn(arg1: string) {
+      return arg1;
+  }
+  // file: file2.ts
+  import { testFn } from './file1'
+  
+  console.log(testFn(5))
+  \`\`\`
+  `;
+
+  const settings: TranspileCodeblocksSettings = {
+    ...defaultSettings,
+    compilerSettings: {
+      ...defaultSettings.compilerSettings,
+      transformVirtualFilepath: (path) =>
+        path.replace('/test/', '/replaced/path/'),
+    },
+  };
+
+  const parser = getParser(settings);
+
+  await expect(
+    transform(md, parser).catch((e) => {
+      throw e.toString();
+    })
+  ).rejects
+    .toContain(`/remark-typescript-tools/replaced/path/test.mdx/codeBlock_1/file2.ts
+Argument of type '5' is not assignable to parameter of type 'string'.`);
 });
