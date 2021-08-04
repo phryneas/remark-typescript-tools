@@ -5,6 +5,8 @@ import mdxPlugin from 'remark-mdx';
 import remarkStringify from 'remark-stringify';
 import { transpileCodeblocks, TranspileCodeblocksSettings } from '../src';
 import { resolve } from 'path';
+import type { Parent, Node } from 'unist';
+import { countLines } from '../src/transpileCodeblocks/utils';
 
 expect.addSnapshotSerializer({
   test(value) {
@@ -266,19 +268,19 @@ console.log(<div>asd</div>)
   expect(await transform(md)).toMatchSnapshot();
 });
 
-test('transforms virtual filepath', async () => {
+test('transforms virtual filepaths', async () => {
   const md = `
-  \`\`\`ts
-  // file: file1.ts
-  export function testFn(arg1: string) {
-      return arg1;
-  }
-  // file: file2.ts
-  import { testFn } from './file1'
-  
-  console.log(testFn(5))
-  \`\`\`
-  `;
+\`\`\`ts
+// file: file1.ts
+export function testFn(arg1: string) {
+    return arg1;
+}
+// file: file2.ts
+import { testFn } from './file1'
+
+console.log(testFn(5))
+\`\`\`
+`;
 
   const settings: TranspileCodeblocksSettings = {
     ...defaultSettings,
@@ -298,4 +300,57 @@ test('transforms virtual filepath', async () => {
   ).rejects
     .toContain(`/remark-typescript-tools/replaced/path/test.mdx/codeBlock_1/file2.ts
 Argument of type '5' is not assignable to parameter of type 'string'.`);
+});
+
+test('Pads line differences', async () => {
+  const md = `
+\`\`\`ts
+// file: file1.ts noEmit
+export function testFn(arg1: string) {
+    return arg1;
+}
+// file: file2.ts
+import { testFn } from './file1'
+
+console.log(testFn("foo"))
+
+type SpaceFiller = {
+  id: number;
+}
+
+const item: SpaceFiller = {
+  id: 1
+}
+
+\`\`\`
+`;
+
+  const settings: TranspileCodeblocksSettings = {
+    ...defaultSettings,
+    compilerSettings: {
+      ...defaultSettings.compilerSettings,
+      maintainSnippetHeights: true,
+    },
+  };
+
+  const parser = getParser(settings);
+
+  const result = (await transform(md, parser)) as Parent;
+
+  const tsCodeSnippet = result.children.find(
+    (child) => child.type === 'code' && child.lang === 'ts'
+  ) as Node & { value: string };
+  const jsCodeSnippet = result.children.find(
+    (child) => child.type === 'code' && child.lang === 'js'
+  ) as Node & { value: string };
+
+  const numLinesTsSnippet = countLines(tsCodeSnippet.value);
+  const numLinesJsSnippet = countLines(jsCodeSnippet.value);
+
+  expect(numLinesTsSnippet).toEqual(11);
+  // despite a type definition being removed in the JS snippet,
+  // the number of lines should be the same
+  expect(numLinesJsSnippet).toEqual(numLinesTsSnippet);
+
+  expect(result).toMatchSnapshot();
 });

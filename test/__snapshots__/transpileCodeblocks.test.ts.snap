@@ -1,5 +1,52 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Pads line differences 1`] = `
+import TabItem from '@theme/TabItem'
+import Tabs from '@theme/Tabs'
+
+    <Tabs
+      groupId="language"
+      defaultValue="ts"
+      values={[
+        { label: 'TypeScript', value: 'ts', },
+        { label: 'JavaScript', value: 'js', },
+      ]}
+    >        
+        <TabItem value="ts">
+\`\`\`ts
+import { testFn } from './file1';
+
+console.log(testFn('foo'));
+
+type SpaceFiller = {
+  id: number;
+};
+
+const item: SpaceFiller = {
+  id: 1,
+};
+\`\`\`
+
+        </TabItem>
+        <TabItem value="js">
+\`\`\`js
+import { testFn } from './file1';
+
+console.log(testFn('foo'));
+
+const item = {
+  id: 1,
+};
+
+
+
+
+\`\`\`
+
+        </TabItem>
+    </Tabs>
+`;
+
 exports[`imports defined via compilerOptions.paths import 1`] = `
 import TabItem from '@theme/TabItem'
 import Tabs from '@theme/Tabs'

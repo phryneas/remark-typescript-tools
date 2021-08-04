@@ -9,6 +9,7 @@ import {
 import type { Plugin } from 'unified';
 import type { Node, Parent } from 'unist';
 import type { VFile } from 'vfile';
+import { countLines } from './utils';
 
 export interface VirtualFile {
   code: string;
@@ -33,7 +34,9 @@ export interface Settings {
   compilerSettings: CompilerSettings;
   postProcessTranspiledJs?: PostProcessor;
   postProcessTs?: PostProcessor;
-  assembleReplacementNodes?: typeof defaultAssembleReplacementNodes;
+  assembleReplacementNodes?: ReturnType<
+    typeof getDefaultAssembleReplacementNodes
+  >;
   fileExtensions?: string[];
 }
 
@@ -43,7 +46,9 @@ export const attacher: Plugin<[Settings]> = function ({
   compilerSettings,
   postProcessTranspiledJs = defaultPostProcessTranspiledJs,
   postProcessTs = defaultPostProcessTs,
-  assembleReplacementNodes = defaultAssembleReplacementNodes,
+  assembleReplacementNodes = getDefaultAssembleReplacementNodes(
+    compilerSettings
+  ),
   fileExtensions = ['.mdx'],
 }) {
   if (!compilers.has(compilerSettings)) {
@@ -143,19 +148,47 @@ ${lines.slice(Math.max(0, diagnostic.line - 5), diagnostic.line + 6).join('\n')}
   };
 };
 
-function defaultAssembleReplacementNodes(
-  node: CodeNode,
-  file: VFile,
-  virtualFolder: string,
-  virtualFiles: Record<string, VirtualFile>,
-  transpilationResult: Record<string, TranspiledFile>,
-  postProcessTs: PostProcessor,
-  postProcessTranspiledJs: PostProcessor
+function getDefaultAssembleReplacementNodes(
+  compilerSettings: CompilerSettings
 ) {
-  return [
-    {
-      type: 'jsx',
-      value: `
+  return function defaultAssembleReplacementNodes(
+    node: CodeNode,
+    file: VFile,
+    virtualFolder: string,
+    virtualFiles: Record<string, VirtualFile>,
+    transpilationResult: Record<string, TranspiledFile>,
+    postProcessTs: PostProcessor,
+    postProcessTranspiledJs: PostProcessor
+  ) {
+    const tsCode = rearrangeFiles(
+      postProcessTs(virtualFiles, file.path, defaultPostProcessTs),
+      virtualFolder
+    );
+
+    const jsCode = rearrangeFiles(
+      postProcessTranspiledJs(
+        transpilationResult,
+        file.path,
+        defaultPostProcessTranspiledJs
+      ),
+      virtualFolder
+    );
+
+    const numTsLines = countLines(tsCode);
+    const numJsLines = countLines(jsCode);
+
+    const numLinesDiff = numTsLines - numJsLines;
+    const finalJsCode =
+      numLinesDiff > 0 && compilerSettings.maintainSnippetHeights
+        ? // pad with newlines to keep the same line count between snippets,
+          // and hence same snippet height
+          jsCode.padEnd(jsCode.length + numLinesDiff, '\n')
+        : jsCode;
+
+    return [
+      {
+        type: 'jsx',
+        value: `
     <Tabs
       groupId="language"
       defaultValue="ts"
@@ -165,39 +198,30 @@ function defaultAssembleReplacementNodes(
       ]}
     >        
         <TabItem value="ts">`,
-    },
-    {
-      ...node,
-      value: rearrangeFiles(
-        postProcessTs(virtualFiles, file.path, defaultPostProcessTs),
-        virtualFolder
-      ),
-    },
-    {
-      type: 'jsx',
-      value: `
+      },
+      {
+        ...node,
+        value: tsCode,
+      },
+      {
+        type: 'jsx',
+        value: `
         </TabItem>
         <TabItem value="js">`,
-    },
-    {
-      ...node,
-      lang: 'js',
-      value: rearrangeFiles(
-        postProcessTranspiledJs(
-          transpilationResult,
-          file.path,
-          defaultPostProcessTranspiledJs
-        ),
-        virtualFolder
-      ),
-    },
-    {
-      type: 'jsx',
-      value: `
+      },
+      {
+        ...node,
+        lang: 'js',
+        value: finalJsCode,
+      },
+      {
+        type: 'jsx',
+        value: `
         </TabItem>
     </Tabs>`,
-    },
-  ];
+      },
+    ];
+  };
 }
 
 function splitFiles(fullCode: string, folder: string) {

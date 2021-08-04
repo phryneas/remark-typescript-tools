@@ -268,6 +268,12 @@ interface CompilerSettings {
    * to their own directory.
    */
   transformVirtualFilepath?: (filepath: string) => string;
+  /**
+   * Whether to pad JS snippets with new lines where it would otherwise
+   * be shorter than the corresponding TS snippet.
+   * Not applicable if a custom `assembleReplacementNodes` function is used.
+   */
+  maintainSnippetHeights?: boolean;
 }
 
 interface CodeNode extends Node {
