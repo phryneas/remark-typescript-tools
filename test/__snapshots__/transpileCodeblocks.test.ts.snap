@@ -72,6 +72,53 @@ console.log(testFn('foo'));
     </Tabs>
 `;
 
+exports[`supports tsx snippets 1`] = `
+import TabItem from '@theme/TabItem'
+import Tabs from '@theme/Tabs'
+
+    <Tabs
+      groupId="language"
+      defaultValue="ts"
+      values={[
+        { label: 'TypeScript', value: 'ts', },
+        { label: 'JavaScript', value: 'js', },
+      ]}
+    >        
+        <TabItem value="ts">
+\`\`\`tsx
+import React from 'react';
+export function App() {
+  const [counter, setCounter] = React.useState<number>(0);
+  return (
+    <div>
+      <button onClick={() => setCounter((prev) => prev + 1)}>
+        Increment counter ({counter})
+      </button>
+    </div>
+  );
+}
+\`\`\`
+
+        </TabItem>
+        <TabItem value="js">
+\`\`\`js
+import React from 'react';
+export function App() {
+  const [counter, setCounter] = React.useState(0);
+  return (
+    <div>
+      <button onClick={() => setCounter((prev) => prev + 1)}>
+        Increment counter ({counter})
+      </button>
+    </div>
+  );
+}
+\`\`\`
+
+        </TabItem>
+    </Tabs>
+`;
+
 exports[`takes "noEmit" files into account for compiling, but does not output them: file1.ts should be missing from this snapshot 1`] = `
 import TabItem from '@theme/TabItem'
 import Tabs from '@theme/Tabs'
