@@ -299,3 +299,23 @@ test('transforms virtual filepath', async () => {
     .toContain(`/remark-typescript-tools/replaced/path/test.mdx/codeBlock_1/file2.ts
 Argument of type '5' is not assignable to parameter of type 'string'.`);
 });
+
+test('supports tsx snippets', async () => {
+  const md = `
+\`\`\`tsx title="App.tsx"
+// file: App.tsx
+import React from 'react';
+export function App() {
+  const [counter, setCounter] = React.useState<number>(0);
+  return (
+    <div>
+      <button onClick={() => setCounter((prev) => prev + 1)}>
+        Increment counter ({counter})
+      </button>
+    </div>
+  )
+}
+`;
+
+  expect(await transform(md)).toMatchSnapshot();
+});

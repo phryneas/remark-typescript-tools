@@ -88,7 +88,7 @@ export const attacher: Plugin<[Settings]> = function ({
       if (node.type === 'code') {
         codeBlock++;
       }
-      if (!(node.type === 'code' && node.lang === 'ts')) {
+      if (!(node.type === 'code' && ['ts', 'tsx'].includes(node.lang))) {
         return [node];
       }
       const tags = node.meta ? node.meta.split(' ') : [];
