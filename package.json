@@ -39,6 +39,7 @@
     "@types/react": "^17.0.11",
     "eslint-plugin-prettier": "3.1.4",
     "husky": "^4.2.5",
+    "release-it": "^15.1.1",
     "remark-mdx": "^1.6.16",
     "remark-parse": "^8.0.3",
     "remark-stringify": "^8.1.1",
