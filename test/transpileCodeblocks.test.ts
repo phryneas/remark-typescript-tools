@@ -204,14 +204,14 @@ console.log(testFn("foo"))
 Type 'string' is not assignable to type 'number'.`);
 });
 
-test('supports hyphens & periods in filenames', async () => {
+test('supports hyphens, square brackets & periods in filenames', async () => {
   const md = `
 \`\`\`ts
 // file: file-one.stuff.ts noEmit
 export function testFn(arg1: string) {
     return arg1;
 }
-// file: file2.ts
+// file: [file2].ts
 import { testFn } from './file-one.stuff'
 
 console.log(testFn("foo"))
@@ -263,6 +263,25 @@ console.log(<div>asd</div>)
 \`\`\`
 `;
 
+  expect(await transform(md)).toMatchSnapshot();
+});
+
+test('transpiles multiple jsx files', async () => {
+  const md = `
+\`\`\`ts
+// file: button.tsx
+import React from 'react';
+
+export const Button = (props: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props} />;
+
+// file: file2.tsx
+import React from 'react';
+import { Button } from "./button";
+
+console.log(<Button>asd</Button>);
+
+\`\`\`
+`;
   expect(await transform(md)).toMatchSnapshot();
 });
 

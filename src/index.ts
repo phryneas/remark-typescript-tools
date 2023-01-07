@@ -7,3 +7,8 @@ export {
   attacher as transpileCodeblocks,
   Settings as TranspileCodeblocksSettings,
 } from './transpileCodeblocks/plugin';
+
+export {
+  postProcessTranspiledJs as defaultPostProcessTranspiledJs,
+  postProcessTs as defaultPostProcessTs,
+} from './transpileCodeblocks/postProcessing';

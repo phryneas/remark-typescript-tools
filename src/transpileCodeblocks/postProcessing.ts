@@ -33,7 +33,7 @@ export function postProcessTranspiledJs(
       const prettyCode = prettify(mangledCode, name, parentFile || name);
 
       return [
-        name,
+        name.replace(/.t(sx?)$/, '.j$1'),
         {
           ...file,
           code: prettyCode.trim(),
