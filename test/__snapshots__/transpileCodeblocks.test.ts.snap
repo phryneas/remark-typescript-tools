@@ -85,7 +85,7 @@ import Tabs from '@theme/Tabs'
       ]}
     >        
         <TabItem value="ts">
-\`\`\`tsx
+\`\`\`tsx title="App.tsx" showLineNumbers
 import React from 'react';
 export function App() {
   const [counter, setCounter] = React.useState<number>(0);
@@ -101,7 +101,7 @@ export function App() {
 
         </TabItem>
         <TabItem value="js">
-\`\`\`js
+\`\`\`js title="App.jsx" showLineNumbers
 import React from 'react';
 export function App() {
   const [counter, setCounter] = React.useState(0);

@@ -12,7 +12,14 @@ expect.addSnapshotSerializer({
   },
   print(value, serialize) {
     if (value.type === 'code') {
-      return '```' + value.lang + '\n' + value.value + '\n```';
+      return (
+        '```' +
+        value.lang +
+        (value.meta ? ' ' + value.meta : '') +
+        '\n' +
+        value.value +
+        '\n```'
+      );
     }
     return value.children
       ? value.children.map(serialize).join('\n')
@@ -321,7 +328,7 @@ Argument of type '5' is not assignable to parameter of type 'string'.`);
 
 test('supports tsx snippets', async () => {
   const md = `
-\`\`\`tsx title="App.tsx"
+\`\`\`tsx title="App.tsx" showLineNumbers
 // file: App.tsx
 import React from 'react';
 export function App() {

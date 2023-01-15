@@ -6,6 +6,7 @@ export {
 export {
   attacher as transpileCodeblocks,
   Settings as TranspileCodeblocksSettings,
+  defaultAssembleReplacementNodes,
 } from './transpileCodeblocks/plugin';
 
 export {
