@@ -18,7 +18,7 @@ export type VirtualFiles = Record<string, VirtualFile>;
 
 interface CodeNode extends Node {
   lang: string;
-  meta: string;
+  meta: string | null;
   value: string;
   indent: number[];
 }
@@ -143,7 +143,7 @@ ${lines.slice(Math.max(0, diagnostic.line - 5), diagnostic.line + 6).join('\n')}
   };
 };
 
-function defaultAssembleReplacementNodes(
+export function defaultAssembleReplacementNodes(
   node: CodeNode,
   file: VFile,
   virtualFolder: string,
@@ -151,7 +151,7 @@ function defaultAssembleReplacementNodes(
   transpilationResult: Record<string, TranspiledFile>,
   postProcessTs: PostProcessor,
   postProcessTranspiledJs: PostProcessor
-) {
+): Node[] {
   return [
     {
       type: 'jsx',
@@ -182,6 +182,9 @@ function defaultAssembleReplacementNodes(
     {
       ...node,
       lang: 'js',
+      ...(typeof node.meta === 'string' && {
+        meta: node.meta.replace(/(title=['"].*)\.t(sx?)(.*")/, '$1.j$2$3'),
+      }),
       value: rearrangeFiles(
         postProcessTranspiledJs(
           transpilationResult,
@@ -201,7 +204,7 @@ function defaultAssembleReplacementNodes(
 }
 
 function splitFiles(fullCode: string, folder: string) {
-  const regex = /^\/\/ file: ([\w\-./]+)(?: (.*))?\s*$/gm;
+  const regex = /^\/\/ file: ([\w\-./\[\]]+)(?: (.*))?\s*$/gm;
   let match = regex.exec(fullCode);
 
   let files: VirtualFiles = {};

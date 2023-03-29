@@ -27,12 +27,12 @@ const n: number = someNumber;
         </TabItem>
         <TabItem value="js">
 \`\`\`js
-// file: file1.ts
+// file: file1.js
 import { someNumber } from '@transpileCodeblocksTest';
 const n = someNumber;
 
 
-// file: file2.ts
+// file: file2.js
 import { someNumber } from '@test/transpileCodeblocks.test';
 const n = someNumber;
 \`\`\`
@@ -41,7 +41,7 @@ const n = someNumber;
     </Tabs>
 `;
 
-exports[`supports hyphens & periods in filenames 1`] = `
+exports[`supports hyphens, square brackets & periods in filenames 1`] = `
 import TabItem from '@theme/TabItem'
 import Tabs from '@theme/Tabs'
 
@@ -85,7 +85,7 @@ import Tabs from '@theme/Tabs'
       ]}
     >        
         <TabItem value="ts">
-\`\`\`tsx
+\`\`\`tsx title="App.tsx" showLineNumbers
 import React from 'react';
 export function App() {
   const [counter, setCounter] = React.useState<number>(0);
@@ -101,7 +101,7 @@ export function App() {
 
         </TabItem>
         <TabItem value="js">
-\`\`\`js
+\`\`\`js title="App.jsx" showLineNumbers
 import React from 'react';
 export function App() {
   const [counter, setCounter] = React.useState(0);
@@ -210,13 +210,13 @@ console.log(testFn('foo'));
         </TabItem>
         <TabItem value="js">
 \`\`\`js
-// file: file1.ts
+// file: file1.js
 export function testFn(arg1) {
   return arg1;
 }
 
 
-// file: file2.ts
+// file: file2.js
 import { testFn } from './file1';
 
 console.log(testFn('foo'));
@@ -251,6 +251,55 @@ console.log(<div>asd</div>);
 import React from 'react';
 
 console.log(<div>asd</div>);
+\`\`\`
+
+        </TabItem>
+    </Tabs>
+`;
+
+exports[`transpiles multiple jsx files 1`] = `
+import TabItem from '@theme/TabItem'
+import Tabs from '@theme/Tabs'
+
+    <Tabs
+      groupId="language"
+      defaultValue="ts"
+      values={[
+        { label: 'TypeScript', value: 'ts', },
+        { label: 'JavaScript', value: 'js', },
+      ]}
+    >        
+        <TabItem value="ts">
+\`\`\`ts
+// file: button.tsx
+import React from 'react';
+
+export const Button = (
+  props: React.ButtonHTMLAttributes<HTMLButtonElement>
+) => <button {...props} />;
+
+
+// file: file2.tsx
+import React from 'react';
+import { Button } from './button';
+
+console.log(<Button>asd</Button>);
+\`\`\`
+
+        </TabItem>
+        <TabItem value="js">
+\`\`\`js
+// file: button.jsx
+import React from 'react';
+
+export const Button = (props) => <button {...props} />;
+
+
+// file: file2.jsx
+import React from 'react';
+import { Button } from './button';
+
+console.log(<Button>asd</Button>);
 \`\`\`
 
         </TabItem>
