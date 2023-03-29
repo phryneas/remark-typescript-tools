@@ -120,12 +120,12 @@ let x: string = 5
 `;
 
   await expect(transform(md)).resolves.toMatchInlineSnapshot(`
-    import TabItem from '@theme/TabItem'
-    import Tabs from '@theme/Tabs'
-    \`\`\`ts
-    let x: string = 5
-    \`\`\`
-  `);
+          import TabItem from '@theme/TabItem'
+          import Tabs from '@theme/Tabs'
+          \`\`\`ts no-transpile
+          let x: string = 5
+          \`\`\`
+        `);
 });
 
 test('transpiles codeblocks with multiple file definitions', async () => {
