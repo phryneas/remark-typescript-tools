@@ -1,8 +1,13 @@
 {
   "version": "1.1.0",
   "license": "MIT",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "files": [
     "dist",
     "src"
@@ -11,16 +16,16 @@
     "node": ">=10"
   },
   "scripts": {
-    "start": "tsdx watch",
-    "build": "tsdx build",
-    "test": "tsdx test",
-    "lint": "tsdx lint",
-    "prepare": "tsdx build"
+    "start": "tsup --watch",
+    "build": "tsup",
+    "_test": "tsdx test",
+    "_lint": "tsdx lint",
+    "prepare": "yarn build"
   },
   "peerDependencies": {
-    "typescript": ">=4.0"
+    "typescript": ">=5.0"
   },
-  "husky": {
+  "_husky": {
     "hooks": {
       "pre-commit": "tsdx lint"
     }
@@ -37,20 +42,22 @@
   "devDependencies": {
     "@types/prettier": "^2.1.0",
     "@types/react": "^17.0.11",
-    "eslint-plugin-prettier": "3.1.4",
     "husky": "^4.2.5",
     "release-it": "^15.1.1",
-    "remark-mdx": "^1.6.16",
+    "remark-mdx": "^3.0.0",
     "remark-parse": "^8.0.3",
     "remark-stringify": "^8.1.1",
-    "tsdx": "^0.13.3",
     "tslib": "^2.0.1",
-    "unified": "^9.2.0"
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.2",
+    "unified": "^11.0.4"
   },
   "dependencies": {
     "@microsoft/tsdoc": "^0.12.21",
+    "mdast-util-mdx-jsx": "^3.0.0",
+    "mdast-util-mdxjs-esm": "^2.0.1",
     "prettier": "^2.1.1",
     "unist-util-flatmap": "^1.0.0",
-    "unist-util-visit": "^2.0.3"
+    "unist-util-visit": "^5.0.0"
   }
 }
