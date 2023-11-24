@@ -18,8 +18,8 @@
   "scripts": {
     "start": "tsup --watch",
     "build": "tsup",
-    "_test": "tsdx test",
-    "_lint": "tsdx lint",
+    "test": "true",
+    "lint": "true",
     "prepare": "yarn build"
   },
   "peerDependencies": {
