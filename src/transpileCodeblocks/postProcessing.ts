@@ -1,4 +1,4 @@
-import { VirtualFiles } from './plugin';
+import type { VirtualFiles } from './plugin.js';
 import prettier from 'prettier';
 
 export function postProcessTs(

@@ -1,15 +1,14 @@
-export {
-  attacher as linkDocblocks,
-  Settings as LinkDocblocksSettings,
-} from './linkDocblocks/plugin';
+export { attacher as linkDocblocks } from './linkDocblocks/plugin.js';
+export type { Settings as LinkDocblocksSettings } from './linkDocblocks/plugin.js';
 
 export {
-  attacher as transpileCodeblocks,
-  Settings as TranspileCodeblocksSettings,
   defaultAssembleReplacementNodes,
-} from './transpileCodeblocks/plugin';
+  attacher as transpileCodeblocks,
+} from './transpileCodeblocks/plugin.js';
+
+export type { Settings as TranspileCodeblocksSettings } from './transpileCodeblocks/plugin.js';
 
 export {
   postProcessTranspiledJs as defaultPostProcessTranspiledJs,
   postProcessTs as defaultPostProcessTs,
-} from './transpileCodeblocks/postProcessing';
+} from './transpileCodeblocks/postProcessing.js';

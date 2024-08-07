@@ -1,11 +1,12 @@
-import visit from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
 // @ts-ignore
 import flatMap from 'unist-util-flatmap';
-import { Compiler, CompilerSettings, TranspiledFile } from './compiler';
+import { Compiler } from './compiler.js';
+import type { CompilerSettings, TranspiledFile } from './compiler.js';
 import {
   postProcessTranspiledJs as defaultPostProcessTranspiledJs,
   postProcessTs as defaultPostProcessTs,
-} from './postProcessing';
+} from './postProcessing.js';
 import type { Plugin } from 'unified';
 import type { Node, Parent } from 'unist';
 import type { VFile } from 'vfile';

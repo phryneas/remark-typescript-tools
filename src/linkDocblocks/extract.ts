@@ -1,8 +1,8 @@
 import ts from 'typescript';
-import path from 'path';
+import * as path from 'node:path';
 import * as tsdoc from '@microsoft/tsdoc';
 
-import { getJSDocCommentRanges } from './utils';
+import { getJSDocCommentRanges } from './utils.js';
 
 export interface ExtractorSettings {
   tsconfig: string;
