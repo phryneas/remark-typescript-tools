@@ -1,18 +1,22 @@
 {
   "include": ["src", "types"],
   "compilerOptions": {
-    "module": "esnext",
-    "lib": ["dom", "esnext"],
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "useUnknownInCatchVariables": true,
+    "module": "NodeNext",
+    "lib": ["DOM", "ESNext"],
     "importHelpers": true,
     "declaration": true,
     "sourceMap": true,
     "rootDir": "./src",
     "strict": true,
+    "outDir": "./dist",
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "jsx": "react",
     "esModuleInterop": true
   }
