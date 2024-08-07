@@ -51,6 +51,5 @@
     "@microsoft/tsdoc": "^0.12.21",
     "prettier": "^2.1.1",
     "unist-util-flatmap": "^1.0.0",
-    "unist-util-visit": "^2.0.3"
-  }
+  "packageManager": "yarn@4.4.0",
 }
