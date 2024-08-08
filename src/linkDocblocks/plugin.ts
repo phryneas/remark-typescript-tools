@@ -119,11 +119,13 @@ export const attacher: Plugin<[Settings]> = function ({ extractorSettings }) {
         return acc;
       }, []);
 
-      visit<
-        Node & { value: string }
-      >({ type: 'fakeRoot', children: retVal }, 'code', (node) => {
-        node.value = node.value.trimEnd();
-      });
+      visit(
+        { type: 'fakeRoot', children: retVal },
+        'code',
+        (node: Node & { value: string }) => {
+          node.value = node.value.trimEnd();
+        }
+      );
 
       return retVal;
     });

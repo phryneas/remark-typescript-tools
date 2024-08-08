@@ -84,10 +84,8 @@ export class Compiler {
           '\n'
         );
         if (diagnostic.file && diagnostic.start) {
-          const {
-            line,
-            character,
-          } = diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
+          const { line, character } =
+            diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start);
           return { line, character, message };
         }
         return { message };
@@ -111,10 +109,8 @@ function createCompilerHost(
   Required<Pick<ts.LanguageServiceHost, 'writeFile'>> & {
     setScriptFileNames(files: string[]): void;
   } {
-  const virtualFiles: Record<
-    string,
-    { contents: string; version: number }
-  > = {};
+  const virtualFiles: Record<string, { contents: string; version: number }> =
+    {};
   let scriptFileNames: string[] = [];
 
   return {
