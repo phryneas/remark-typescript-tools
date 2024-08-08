@@ -10,6 +10,9 @@ import {
 import type { Plugin } from 'unified';
 import type { Node, Parent } from 'unist';
 import type { VFile } from 'vfile';
+import type { ImportDeclaration } from 'estree';
+import type { MdxjsEsm } from 'mdast-util-mdxjs-esm';
+import type { MdxJsxFlowElement } from 'mdast-util-mdx-jsx';
 
 export interface VirtualFile {
   code: string;
@@ -28,7 +31,7 @@ type PostProcessor = (
   files: VirtualFiles,
   parentFile?: string,
   defaultProcessor?: PostProcessor
-) => VirtualFiles;
+) => Promise<VirtualFiles>;
 
 export interface Settings {
   compilerSettings: CompilerSettings;
@@ -63,29 +66,91 @@ export const attacher: Plugin<[Settings]> = function ({
     let hasTabsImport = false;
     let hasTabItemImport = false;
 
-    visit<Node & { value: string }>(tree, 'import', (node) => {
-      if (/\bTabs\b/.test(node.value)) hasTabsImport = true;
-      if (/\bTabItem\b/.test(node.value)) hasTabItemImport = true;
+    visit(tree, 'ImportDeclaration', (node: ImportDeclaration) => {
+      if (
+        node.source.value === '@theme/Tabs' &&
+        node.specifiers.some(
+          (sp) => sp.type === 'ImportSpecifier' && sp.local.name === 'Tabs'
+        )
+      ) {
+        hasTabsImport = true;
+      }
+      if (
+        node.source.value === '@theme/TabItem' &&
+        node.specifiers.some(
+          (sp) => sp.type === 'ImportSpecifier' && sp.local.name === 'TabItem'
+        )
+      ) {
+        hasTabItemImport = true;
+      }
     });
 
-    visit<Parent>(tree, 'root', (node) => {
+    visit(tree, 'root', (node: Parent) => {
       if (!hasTabsImport) {
         node.children.unshift({
-          type: 'import',
-          value: `import Tabs from '@theme/Tabs'`,
-        });
+          type: 'mdxjsEsm',
+          value: "import Tabs from '@theme/Tabs'",
+          data: {
+            estree: {
+              type: 'Program',
+              body: [
+                {
+                  type: 'ImportDeclaration',
+                  specifiers: [
+                    {
+                      type: 'ImportDefaultSpecifier',
+                      local: {
+                        type: 'Identifier',
+                        name: 'Tabs',
+                      },
+                    },
+                  ],
+                  source: {
+                    type: 'Literal',
+                    value: '@theme/Tabs',
+                  },
+                },
+              ],
+              sourceType: 'module',
+            },
+          },
+        } satisfies MdxjsEsm as MdxjsEsm);
       }
       if (!hasTabItemImport) {
         node.children.unshift({
-          type: 'import',
-          value: `import TabItem from '@theme/TabItem'`,
-        });
+          type: 'mdxjsEsm',
+          value: "import TabItem from '@theme/TabItem'",
+          data: {
+            estree: {
+              type: 'Program',
+              body: [
+                {
+                  type: 'ImportDeclaration',
+                  specifiers: [
+                    {
+                      type: 'ImportDefaultSpecifier',
+                      local: {
+                        type: 'Identifier',
+                        name: 'TabItem',
+                      },
+                    },
+                  ],
+                  source: {
+                    type: 'Literal',
+                    value: '@theme/TabItem',
+                  },
+                },
+              ],
+              sourceType: 'module',
+            },
+          },
+        } satisfies MdxjsEsm as MdxjsEsm);
       }
     });
 
     let codeBlock = 0;
 
-    return flatMap(tree, function mapper(node: CodeNode): Node[] {
+    return flatMap(tree, function mapper(node: CodeNode) {
       if (node.type === 'code') {
         codeBlock++;
       }
@@ -144,7 +209,7 @@ ${lines.slice(Math.max(0, diagnostic.line - 5), diagnostic.line + 6).join('\n')}
   };
 };
 
-export function defaultAssembleReplacementNodes(
+export async function defaultAssembleReplacementNodes(
   node: CodeNode,
   file: VFile,
   virtualFolder: string,
@@ -152,55 +217,157 @@ export function defaultAssembleReplacementNodes(
   transpilationResult: Record<string, TranspiledFile>,
   postProcessTs: PostProcessor,
   postProcessTranspiledJs: PostProcessor
-): Node[] {
+): Promise<Node[]> {
   return [
     {
-      type: 'jsx',
-      value: `
-    <Tabs
-      groupId="language"
-      defaultValue="ts"
-      values={[
-        { label: 'TypeScript', value: 'ts', },
-        { label: 'JavaScript', value: 'js', },
-      ]}
-    >        
-        <TabItem value="ts">`,
-    },
-    {
-      ...node,
-      value: rearrangeFiles(
-        postProcessTs(virtualFiles, file.path, defaultPostProcessTs),
-        virtualFolder
-      ),
-    },
-    {
-      type: 'jsx',
-      value: `
-        </TabItem>
-        <TabItem value="js">`,
-    },
-    {
-      ...node,
-      lang: 'js',
-      ...(typeof node.meta === 'string' && {
-        meta: node.meta.replace(/(title=['"].*)\.t(sx?)(.*")/, '$1.j$2$3'),
-      }),
-      value: rearrangeFiles(
-        postProcessTranspiledJs(
-          transpilationResult,
-          file.path,
-          defaultPostProcessTranspiledJs
-        ),
-        virtualFolder
-      ),
-    },
-    {
-      type: 'jsx',
-      value: `
-        </TabItem>
-    </Tabs>`,
-    },
+      type: 'mdxJsxFlowElement',
+      name: 'Tabs',
+      attributes: [
+        { type: 'mdxJsxAttribute', name: 'groupId', value: 'language' },
+        { type: 'mdxJsxAttribute', name: 'defaultValue', value: 'ts' },
+        {
+          type: 'mdxJsxAttribute',
+          name: 'values',
+          value: {
+            type: 'mdxJsxAttributeValueExpression',
+            value:
+              "[{ label: 'TypeScript', value: 'ts', }, { label: 'JavaScript', value: 'js', } ]",
+            data: {
+              estree: {
+                type: 'Program',
+                body: [
+                  {
+                    type: 'ExpressionStatement',
+                    expression: {
+                      type: 'ArrayExpression',
+                      elements: [
+                        {
+                          type: 'ObjectExpression',
+                          properties: [
+                            {
+                              type: 'Property',
+                              method: false,
+                              shorthand: false,
+                              computed: false,
+                              key: {
+                                type: 'Identifier',
+                                name: 'label',
+                              },
+                              value: {
+                                type: 'Literal',
+                                value: 'TypeScript',
+                              },
+                              kind: 'init',
+                            },
+                            {
+                              type: 'Property',
+                              method: false,
+                              shorthand: false,
+                              computed: false,
+                              key: {
+                                type: 'Identifier',
+                                name: 'value',
+                              },
+                              value: {
+                                type: 'Literal',
+                                value: 'ts',
+                              },
+                              kind: 'init',
+                            },
+                          ],
+                        },
+                        {
+                          type: 'ObjectExpression',
+                          properties: [
+                            {
+                              type: 'Property',
+                              method: false,
+                              shorthand: false,
+                              computed: false,
+                              key: {
+                                type: 'Identifier',
+                                name: 'label',
+                              },
+                              value: {
+                                type: 'Literal',
+                                value: 'JavaScript',
+                              },
+                              kind: 'init',
+                            },
+                            {
+                              type: 'Property',
+                              method: false,
+                              shorthand: false,
+                              computed: false,
+                              key: {
+                                type: 'Identifier',
+                                name: 'value',
+                              },
+                              value: {
+                                type: 'Literal',
+                                value: 'js',
+                              },
+                              kind: 'init',
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                ],
+                sourceType: 'module',
+                comments: [],
+              },
+            },
+          },
+        },
+      ],
+      children: [
+        {
+          type: 'mdxJsxFlowElement',
+          name: 'TabItem',
+          attributes: [{ type: 'mdxJsxAttribute', name: 'value', value: 'ts' }],
+          children: [
+            {
+              ...node,
+              value: rearrangeFiles(
+                await postProcessTs(
+                  virtualFiles,
+                  file.path,
+                  defaultPostProcessTs
+                ),
+                virtualFolder
+              ),
+            } satisfies CodeNode as any,
+          ],
+        },
+        {
+          type: 'mdxJsxFlowElement',
+          name: 'TabItem',
+          attributes: [{ type: 'mdxJsxAttribute', name: 'value', value: 'js' }],
+          children: [
+            {
+              ...node,
+              lang: 'js',
+              ...(typeof node.meta === 'string' && {
+                meta: node.meta.replace(
+                  /(title=['"].*)\.t(sx?)(.*")/,
+                  '$1.j$2$3'
+                ),
+              }),
+              value: rearrangeFiles(
+                await postProcessTranspiledJs(
+                  transpilationResult,
+                  file.path,
+                  defaultPostProcessTranspiledJs
+                ),
+                virtualFolder
+              ),
+            } satisfies CodeNode as any,
+          ],
+        },
+      ],
+    } satisfies MdxJsxFlowElement as MdxJsxFlowElement,
   ];
 }
 
@@ -208,7 +375,7 @@ function splitFiles(fullCode: string, folder: string) {
   const regex = /^\/\/ file: ([\w\-./\[\]]+)(?: (.*))?\s*$/gm;
   let match = regex.exec(fullCode);
 
-  let files: VirtualFiles = {};
+  const files: VirtualFiles = {};
 
   do {
     const start = match ? match.index + match[0].length + 1 : 0;
