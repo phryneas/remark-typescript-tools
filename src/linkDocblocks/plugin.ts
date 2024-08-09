@@ -19,13 +19,15 @@ type RenderableKey = {
     : never;
 }[keyof Comment];
 
-export interface Settings {
+export interface LinkDocblocksSettings {
   extractorSettings: ExtractorSettings;
 }
 
 const extractors = new WeakMap<ExtractorSettings, Extractor>();
 
-export const attacher: Plugin<[Settings]> = function ({ extractorSettings }) {
+export const linkDocblocks: Plugin<[LinkDocblocksSettings]> = function ({
+  extractorSettings,
+}) {
   if (!extractors.has(extractorSettings)) {
     extractors.set(extractorSettings, new Extractor(extractorSettings));
   }

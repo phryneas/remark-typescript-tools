@@ -1,7 +1,7 @@
 import type { VirtualFiles } from './plugin.js';
 import prettier from 'prettier';
 
-export async function postProcessTs(
+export async function defaultPostProcessTs(
   files: VirtualFiles,
   parentFile?: string
 ): Promise<VirtualFiles> {
@@ -22,7 +22,7 @@ export async function postProcessTs(
   );
 }
 
-export async function postProcessTranspiledJs(
+export async function defaultPostProcessTranspiledJs(
   files: VirtualFiles,
   parentFile?: string
 ): Promise<VirtualFiles> {

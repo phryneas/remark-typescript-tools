@@ -4,8 +4,8 @@ import flatMap from 'unist-util-flatmap';
 import { Compiler } from './compiler.js';
 import type { CompilerSettings, TranspiledFile } from './compiler.js';
 import {
-  postProcessTranspiledJs as defaultPostProcessTranspiledJs,
-  postProcessTs as defaultPostProcessTs,
+  defaultPostProcessTranspiledJs,
+  defaultPostProcessTs,
 } from './postProcessing.js';
 import type { Plugin } from 'unified';
 import type { Node, Parent } from 'unist';
@@ -33,7 +33,7 @@ type PostProcessor = (
   defaultProcessor?: PostProcessor
 ) => Promise<VirtualFiles>;
 
-export interface Settings {
+export interface TranspileCodeblocksSettings {
   compilerSettings: CompilerSettings;
   postProcessTranspiledJs?: PostProcessor;
   postProcessTs?: PostProcessor;
@@ -43,171 +43,174 @@ export interface Settings {
 
 const compilers = new WeakMap<CompilerSettings, Compiler>();
 
-export const attacher: Plugin<[Settings]> = function ({
-  compilerSettings,
-  postProcessTranspiledJs = defaultPostProcessTranspiledJs,
-  postProcessTs = defaultPostProcessTs,
-  assembleReplacementNodes = defaultAssembleReplacementNodes,
-  fileExtensions = ['.mdx'],
-}) {
-  if (!compilers.has(compilerSettings)) {
-    compilers.set(compilerSettings, new Compiler(compilerSettings));
-  }
-  const compiler = compilers.get(compilerSettings)!;
-
-  return function transformer(tree, file) {
-    if (!file.extname || !fileExtensions.includes(file.extname)) {
-      return tree;
+export const transpileCodeblocks: Plugin<[TranspileCodeblocksSettings]> =
+  function ({
+    compilerSettings,
+    postProcessTranspiledJs = defaultPostProcessTranspiledJs,
+    postProcessTs = defaultPostProcessTs,
+    assembleReplacementNodes = defaultAssembleReplacementNodes,
+    fileExtensions = ['.mdx'],
+  }) {
+    if (!compilers.has(compilerSettings)) {
+      compilers.set(compilerSettings, new Compiler(compilerSettings));
     }
+    const compiler = compilers.get(compilerSettings)!;
 
-    const virtualFilepath =
-      compilerSettings.transformVirtualFilepath?.(file.path ?? '') ?? file.path;
-
-    let hasTabsImport = false;
-    let hasTabItemImport = false;
-
-    visit(tree, 'ImportDeclaration', (node: ImportDeclaration) => {
-      if (
-        node.source.value === '@theme/Tabs' &&
-        node.specifiers.some(
-          (sp) => sp.type === 'ImportSpecifier' && sp.local.name === 'Tabs'
-        )
-      ) {
-        hasTabsImport = true;
+    return function transformer(tree, file) {
+      if (!file.extname || !fileExtensions.includes(file.extname)) {
+        return tree;
       }
-      if (
-        node.source.value === '@theme/TabItem' &&
-        node.specifiers.some(
-          (sp) => sp.type === 'ImportSpecifier' && sp.local.name === 'TabItem'
-        )
-      ) {
-        hasTabItemImport = true;
-      }
-    });
 
-    visit(tree, 'root', (node: Parent) => {
-      if (!hasTabsImport) {
-        node.children.unshift({
-          type: 'mdxjsEsm',
-          value: "import Tabs from '@theme/Tabs'",
-          data: {
-            estree: {
-              type: 'Program',
-              body: [
-                {
-                  type: 'ImportDeclaration',
-                  specifiers: [
-                    {
-                      type: 'ImportDefaultSpecifier',
-                      local: {
-                        type: 'Identifier',
-                        name: 'Tabs',
+      const virtualFilepath =
+        compilerSettings.transformVirtualFilepath?.(file.path ?? '') ??
+        file.path;
+
+      let hasTabsImport = false;
+      let hasTabItemImport = false;
+
+      visit(tree, 'ImportDeclaration', (node: ImportDeclaration) => {
+        if (
+          node.source.value === '@theme/Tabs' &&
+          node.specifiers.some(
+            (sp) => sp.type === 'ImportSpecifier' && sp.local.name === 'Tabs'
+          )
+        ) {
+          hasTabsImport = true;
+        }
+        if (
+          node.source.value === '@theme/TabItem' &&
+          node.specifiers.some(
+            (sp) => sp.type === 'ImportSpecifier' && sp.local.name === 'TabItem'
+          )
+        ) {
+          hasTabItemImport = true;
+        }
+      });
+
+      visit(tree, 'root', (node: Parent) => {
+        if (!hasTabsImport) {
+          node.children.unshift({
+            type: 'mdxjsEsm',
+            value: "import Tabs from '@theme/Tabs'",
+            data: {
+              estree: {
+                type: 'Program',
+                body: [
+                  {
+                    type: 'ImportDeclaration',
+                    specifiers: [
+                      {
+                        type: 'ImportDefaultSpecifier',
+                        local: {
+                          type: 'Identifier',
+                          name: 'Tabs',
+                        },
                       },
+                    ],
+                    source: {
+                      type: 'Literal',
+                      value: '@theme/Tabs',
                     },
-                  ],
-                  source: {
-                    type: 'Literal',
-                    value: '@theme/Tabs',
                   },
-                },
-              ],
-              sourceType: 'module',
+                ],
+                sourceType: 'module',
+              },
             },
-          },
-        } satisfies MdxjsEsm as MdxjsEsm);
-      }
-      if (!hasTabItemImport) {
-        node.children.unshift({
-          type: 'mdxjsEsm',
-          value: "import TabItem from '@theme/TabItem'",
-          data: {
-            estree: {
-              type: 'Program',
-              body: [
-                {
-                  type: 'ImportDeclaration',
-                  specifiers: [
-                    {
-                      type: 'ImportDefaultSpecifier',
-                      local: {
-                        type: 'Identifier',
-                        name: 'TabItem',
+          } satisfies MdxjsEsm as MdxjsEsm);
+        }
+        if (!hasTabItemImport) {
+          node.children.unshift({
+            type: 'mdxjsEsm',
+            value: "import TabItem from '@theme/TabItem'",
+            data: {
+              estree: {
+                type: 'Program',
+                body: [
+                  {
+                    type: 'ImportDeclaration',
+                    specifiers: [
+                      {
+                        type: 'ImportDefaultSpecifier',
+                        local: {
+                          type: 'Identifier',
+                          name: 'TabItem',
+                        },
                       },
+                    ],
+                    source: {
+                      type: 'Literal',
+                      value: '@theme/TabItem',
                     },
-                  ],
-                  source: {
-                    type: 'Literal',
-                    value: '@theme/TabItem',
                   },
-                },
-              ],
-              sourceType: 'module',
+                ],
+                sourceType: 'module',
+              },
             },
-          },
-        } satisfies MdxjsEsm as MdxjsEsm);
-      }
-    });
+          } satisfies MdxjsEsm as MdxjsEsm);
+        }
+      });
 
-    let codeBlock = 0;
+      let codeBlock = 0;
 
-    return flatMap(tree, function mapper(node: CodeNode) {
-      if (node.type === 'code') {
-        codeBlock++;
-      }
-      if (!(node.type === 'code' && ['ts', 'tsx'].includes(node.lang))) {
-        return [node];
-      }
-      const tags = node.meta ? node.meta.split(' ') : [];
-      if (tags.includes('no-transpile')) {
-        return [node];
-      }
+      return flatMap(tree, function mapper(node: CodeNode) {
+        if (node.type === 'code') {
+          codeBlock++;
+        }
+        if (!(node.type === 'code' && ['ts', 'tsx'].includes(node.lang))) {
+          return [node];
+        }
+        const tags = node.meta ? node.meta.split(' ') : [];
+        if (tags.includes('no-transpile')) {
+          return [node];
+        }
 
-      const virtualFolder = `${virtualFilepath}/codeBlock_${codeBlock}`;
-      const virtualFiles = splitFiles(node.value, virtualFolder);
+        const virtualFolder = `${virtualFilepath}/codeBlock_${codeBlock}`;
+        const virtualFiles = splitFiles(node.value, virtualFolder);
 
-      //console.time(virtualFolder)
-      const transpilationResult = compiler.compile(virtualFiles);
-      //console.timeEnd(virtualFolder)
+        //console.time(virtualFolder)
+        const transpilationResult = compiler.compile(virtualFiles);
+        //console.timeEnd(virtualFolder)
 
-      for (const [fileName, result] of Object.entries(transpilationResult)) {
-        for (const diagnostic of result.diagnostics) {
-          if (diagnostic.line && node.position) {
-            const lines = result.code
-              .split('\n')
-              .map(
-                (line, lineNo) => `${String(lineNo).padStart(3, ' ')}  ${line}`
-              );
+        for (const [fileName, result] of Object.entries(transpilationResult)) {
+          for (const diagnostic of result.diagnostics) {
+            if (diagnostic.line && node.position) {
+              const lines = result.code
+                .split('\n')
+                .map(
+                  (line, lineNo) =>
+                    `${String(lineNo).padStart(3, ' ')}  ${line}`
+                );
 
-            file.fail(
-              `
+              file.fail(
+                `
 TypeScript error in code block in line ${diagnostic.line} of ${fileName}
 ${diagnostic.message}
 
 ${lines.slice(Math.max(0, diagnostic.line - 5), diagnostic.line + 6).join('\n')}
             `,
-              {
-                line: diagnostic.line + node.position.start.line,
-                column: diagnostic.character,
-              }
-            );
-          } else {
-            file.fail(diagnostic.message, node);
+                {
+                  line: diagnostic.line + node.position.start.line,
+                  column: diagnostic.character,
+                }
+              );
+            } else {
+              file.fail(diagnostic.message, node);
+            }
           }
         }
-      }
 
-      return assembleReplacementNodes(
-        node,
-        file,
-        virtualFolder,
-        virtualFiles,
-        transpilationResult,
-        postProcessTs,
-        postProcessTranspiledJs
-      );
-    });
+        return assembleReplacementNodes(
+          node,
+          file,
+          virtualFolder,
+          virtualFiles,
+          transpilationResult,
+          postProcessTs,
+          postProcessTranspiledJs
+        );
+      });
+    };
   };
-};
 
 export async function defaultAssembleReplacementNodes(
   node: CodeNode,
