@@ -711,13 +711,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^18.3.3":
-  version: 18.3.3
-  resolution: "@types/react@npm:18.3.3"
+"@types/react@npm:^18.3.4":
+  version: 18.3.4
+  resolution: "@types/react@npm:18.3.4"
   dependencies:
     "@types/prop-types": "npm:*"
     csstype: "npm:^3.0.2"
-  checksum: 10/68e203b7f1f91d6cf21f33fc7af9d6d228035a26c83f514981e54aa3da695d0ec6af10c277c6336de1dd76c4adbe9563f3a21f80c4462000f41e5f370b46e96c
+  checksum: 10/359973924be42cf9e7366e1d885b28e0b3bd56d31f24458c5351af7a3f2fc070511e90d517b2195fb229146cdcb70342db6318e279c31dd5057beec1105b704e
   languageName: node
   linkType: hard
 
@@ -4102,7 +4102,7 @@ __metadata:
     "@microsoft/tsdoc": "npm:^0.15.0"
     "@types/estree": "npm:^1.0.5"
     "@types/node": "npm:^22.5.0"
-    "@types/react": "npm:^18.3.3"
+    "@types/react": "npm:^18.3.4"
     "@types/unist": "npm:^3.0.2"
     husky: "npm:^9.1.4"
     mdast-util-mdx-jsx: "npm:^3.1.2"
