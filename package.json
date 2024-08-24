@@ -46,7 +46,7 @@
   "author": "Lenz Weber",
   "module": "dist/index.js",
   "devDependencies": {
-    "@types/node": "^22.2.0",
+    "@types/node": "^22.5.0",
     "@types/react": "^18.3.3",
     "husky": "^9.1.4",
     "release-it": "^17.6.0",
