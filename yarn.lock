@@ -2133,7 +2133,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"husky@npm:^9.1.4":
+"husky@npm:^9.1.5":
   version: 9.1.5
   resolution: "husky@npm:9.1.5"
   bin:
@@ -4104,7 +4104,7 @@ __metadata:
     "@types/node": "npm:^22.5.0"
     "@types/react": "npm:^18.3.4"
     "@types/unist": "npm:^3.0.3"
-    husky: "npm:^9.1.4"
+    husky: "npm:^9.1.5"
     mdast-util-mdx-jsx: "npm:^3.1.2"
     mdast-util-mdxjs-esm: "npm:^2.0.1"
     prettier: "npm:^3.3.3"
