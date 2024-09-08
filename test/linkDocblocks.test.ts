@@ -1,8 +1,9 @@
-import unified from 'unified';
+import {unified} from 'unified';
 import remarkParser from 'remark-parse';
 import remarkStringify from 'remark-stringify';
 import { linkDocblocks, LinkDocblocksSettings } from '../src';
 import { resolve } from 'path';
+import {test} from 'node:test';
 
 /**
  * Interface Test!
@@ -79,8 +80,8 @@ export const /**
 
 const defaultSettings: LinkDocblocksSettings = {
   extractorSettings: {
-    tsconfig: resolve(__dirname, '..', 'tsconfig.json'),
-    basedir: resolve(__dirname, '..'),
+    tsconfig: resolve(import.meta.dirname, '..', 'tsconfig.json'),
+    basedir: resolve(import.meta.dirname, '..'),
     rootFiles: ['test/linkDocblocks.test.ts'],
   },
 };
@@ -92,8 +93,9 @@ function getParser(settings = defaultSettings) {
     .use(remarkStringify);
 }
 
-test('parsing single sections of an interface docblock', async () => {
-  const result = await getParser().process(`
+test('parsing single sections of an interface docblock', async (t) => {
+  const result = await getParser().process(
+`
 # Infos about Test
 [summary](docblock://test/linkDocblocks.test.ts?token=Test)
 
@@ -101,51 +103,47 @@ test('parsing single sections of an interface docblock', async () => {
 [remarks](docblock://test/linkDocblocks.test.ts?token=Test)
 `);
 
-  expect(result.contents).toMatchInlineSnapshot(`
-    "# Infos about Test
+  t.assert.equal(result.value, `# Infos about Test
 
-    Interface Test!
+Interface Test!
 
-    ## Some more remarks
+## Some more remarks
 
-    Some more infos.
-    "
-  `);
+Some more infos.
+`);
 });
 
-test('parsing multiple sections of an interface docblock', async () => {
+test('parsing multiple sections of an interface docblock', async (t) => {
   const result = await getParser().process(`
 # Infos about Test
 [summary,remarks](docblock://test/linkDocblocks.test.ts?token=Test)
 `);
 
-  expect(result.contents).toMatchInlineSnapshot(`
-    "# Infos about Test
+  t.assert.equal(result.value, 
+`# Infos about Test
 
-    Interface Test!
+Interface Test!
 
-    Some more infos.
-    "
-  `);
+Some more infos.
+`);
 });
 
-test('parsing multiple sections of a docblock at a nested position', async () => {
+test('parsing multiple sections of a docblock at a nested position', async (t) => {
   const result = await getParser().process(`
 # Infos about Test
 [summary,remarks](docblock://test/linkDocblocks.test.ts?token=Test.nestedFunction)
 `);
 
-  expect(result.contents).toMatchInlineSnapshot(`
-    "# Infos about Test
+  t.assert.equal(result.value, 
+`# Infos about Test
 
-    This is a function
+This is a function
 
-    And it is nested!
-    "
-  `);
+And it is nested!
+`);
 });
 
-test('parsing multiple sections of a docblock at a nested position', async () => {
+test('parsing multiple sections of a docblock at a nested position', async (t) => {
   const result = await getParser().process(`
 # Infos about Test.nestedFunction
 [summary,remarks](docblock://test/linkDocblocks.test.ts?token=Test.nestedFunction)
@@ -157,103 +155,98 @@ test('parsing multiple sections of a docblock at a nested position', async () =>
 [overloadSummary,params,overloadRemarks,examples](docblock://test/linkDocblocks.test.ts?token=Test.nestedFunction&overload=1)
 
 `);
-  expect(result.contents).toMatchInlineSnapshot(`
-    "# Infos about Test.nestedFunction
+  t.assert.equal(result.value, 
+`# Infos about Test.nestedFunction
 
-    This is a function
+This is a function
 
-    And it is nested!
+And it is nested!
 
-    # Overload 0
+# Overload 0
 
-    Also, this is a special overload
+Also, this is a special overload
 
-    -   **foo** some info about the first parameter
+* **foo** some info about the first parameter
 
-    With some more description
+With some more description
 
-    \`\`\`ts
-    console.log(\\"test\\")
-    \`\`\`
+\`\`\`ts
+console.log("test")
+\`\`\`
 
-    # Overload 1
+# Overload 1
 
-    Also, this is a special overload that takes a second parameter
+Also, this is a special overload that takes a second parameter
 
-    -   **foo** some info about the first parameter
-    -   **bar** and some info about the second parameter
+* **foo** some info about the first parameter
+* **bar** and some info about the second parameter
 
-    With some more extra description
+With some more extra description
 
-    \`\`\`ts
-    console.log(\\"test\\")
-    \`\`\`
-    "
-  `);
+\`\`\`ts
+console.log("test")
+\`\`\`
+`);
 });
 
-test('const arrow function docblock1', async () => {
+test('const arrow function docblock1', async (t) => {
   const result = await getParser().process(`
 # Infos about Test
 [summary,remarks](docblock://test/linkDocblocks.test.ts?token=arrowFunction1)
 `);
 
-  expect(result.contents).toMatchInlineSnapshot(`
-    "# Infos about Test
+  t.assert.equal(result.value, 
+`# Infos about Test
 
-    This is an arrow function - outside comment style
+This is an arrow function - outside comment style
 
-    It's very pointy, but also fat!
-    "
-  `);
+It's very pointy, but also fat!
+`);
 });
 
-test('const arrow function docblock2', async () => {
+test('const arrow function docblock2', async (t) => {
   const result = await getParser().process(`
 # Infos about Test
 [summary,remarks](docblock://test/linkDocblocks.test.ts?token=arrowFunction2)
 `);
 
-  expect(result.contents).toMatchInlineSnapshot(`
-    "# Infos about Test
+  t.assert.equal(result.value, 
+`# Infos about Test
 
-    This is an arrow function - medium comment style
+This is an arrow function - medium comment style
 
-    It's very pointy, but also fat!
-    "
-  `);
+It's very pointy, but also fat!
+`);
 });
 
-test('const arrow function docblock3', async () => {
+test('const arrow function docblock3', async (t) => {
   const result = await getParser().process(`
 # Infos about Test
 [summary,remarks](docblock://test/linkDocblocks.test.ts?token=arrowFunction3)
 `);
 
-  expect(result.contents).toMatchInlineSnapshot(`
-    "# Infos about Test
+  t.assert.equal(result.value, 
+`# Infos about Test
 
-    This is an arrow function - inside comment style
+This is an arrow function - inside comment style
 
-    It's very pointy, but also fat!
-    "
-  `);
+It's very pointy, but also fat!
+`);
 });
 
-test('const arrow function docblock4', async () => {
+test('const arrow function docblock4', async (t) => {
   const result = await getParser().process(`
 # Infos about Test
 [summary,remarks](docblock://test/linkDocblocks.test.ts?token=arrowFunction4)
 `);
 
-  expect(result.contents).toMatchInlineSnapshot(`
-    "# Infos about Test
+  t.assert.equal(result.value, 
+`# Infos about Test
 
-    This is an arrow function - inside comment style
+This is an arrow function - inside comment style
 
-    This should take precedence
-    "
-  `);
+This should take precedence
+`);
 });
 
 /**
@@ -272,20 +265,19 @@ test('const arrow function docblock4', async () => {
  */
 export function exampleWithDocBlockMeta() {}
 
-test('codeblock-meta comments are removed and added to meta', async () => {
+test('codeblock-meta comments are removed and added to meta', async (t) => {
   const result = await getParser().process(`
 [examples](docblock://test/linkDocblocks.test.ts?token=exampleWithDocBlockMeta)
 `);
 
-  expect(result.contents).toMatchInlineSnapshot(`
-    "\`\`\`ts title=Foo
-    foo
-    \`\`\`
+  t.assert.equal(result.value, 
+`\`\`\`ts title=Foo
+foo
+\`\`\`
 
-    \`\`\`ts title=Bar {1,2,3}
-    lalala
-    foo
-    \`\`\`
-    "
-  `);
+\`\`\`ts title=Bar {1,2,3}
+lalala
+foo
+\`\`\`
+`);
 });

@@ -1,10 +1,11 @@
 // @ts-ignore
 import flatMap from 'unist-util-flatmap';
-import { Extractor, ExtractorSettings } from './extract';
-import { renderDocNode } from './utils';
-import { URL } from 'url';
+import { Extractor } from './extract.js';
+import type { ExtractorSettings } from './extract.js';
+import { renderDocNode } from './utils.js';
+import { URL } from 'node:url';
 import type { Node, Parent } from 'unist';
-import visit from 'unist-util-visit';
+import { visit } from 'unist-util-visit';
 
 import type { Plugin } from 'unified';
 import type { DocNode } from '@microsoft/tsdoc';
@@ -18,13 +19,15 @@ type RenderableKey = {
     : never;
 }[keyof Comment];
 
-export interface Settings {
+export interface LinkDocblocksSettings {
   extractorSettings: ExtractorSettings;
 }
 
 const extractors = new WeakMap<ExtractorSettings, Extractor>();
 
-export const attacher: Plugin<[Settings]> = function ({ extractorSettings }) {
+export const linkDocblocks: Plugin<[LinkDocblocksSettings]> = function ({
+  extractorSettings,
+}) {
   if (!extractors.has(extractorSettings)) {
     extractors.set(extractorSettings, new Extractor(extractorSettings));
   }
@@ -118,11 +121,13 @@ export const attacher: Plugin<[Settings]> = function ({ extractorSettings }) {
         return acc;
       }, []);
 
-      visit<
-        Node & { value: string }
-      >({ type: 'fakeRoot', children: retVal }, 'code', (node) => {
-        node.value = node.value.trimEnd();
-      });
+      visit(
+        { type: 'fakeRoot', children: retVal },
+        'code',
+        (node: Node & { value: string }) => {
+          node.value = node.value.trimEnd();
+        }
+      );
 
       return retVal;
     });
