@@ -42,4 +42,4 @@ jobs:
           CI: true
 
       - name: Publish to pkg.pr.new
-        run: yarn dlx pkg-pr-new publish --no-template # --compact
+        run: npx pkg-pr-new publish --no-template # --compact
