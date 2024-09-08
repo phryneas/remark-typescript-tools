@@ -1,4 +1,6 @@
 {
+  "name": "remark-typescript-tools",
+  "author": "Lenz Weber-Tronic",
   "version": "1.1.0",
   "license": "MIT",
   "type": "module",
@@ -21,6 +23,10 @@
     "dist",
     "src"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/phryneas/remark-typescript-tools.git"
+  },
   "engines": {
     "node": ">=10"
   },
@@ -42,8 +48,6 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "remark-typescript-tools",
-  "author": "Lenz Weber",
   "module": "dist/index.js",
   "devDependencies": {
     "@types/node": "^22.5.4",
