@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { normalize } from 'node:path';
+import { normalize, dirname, join } from 'node:path';
 
 import type { VirtualFiles, VirtualFile } from './plugin.js';
 
@@ -53,14 +53,13 @@ export class Compiler {
   }
 
   public compile(files: VirtualFiles) {
-    // console.log(compilerOptions)
-
     this.compilerHost.setScriptFileNames([]);
     for (let [fileName, { code }] of Object.entries(files)) {
       code = code.replace(/^$/gm, '//__NEWLINE__');
       this.compilerHost.writeFile(fileName, code);
     }
-    this.compilerHost.setScriptFileNames(Object.keys(files));
+    const filenames = Object.keys(files);
+    this.compilerHost.setScriptFileNames(filenames);
 
     const returnFiles: TranspiledFiles = {};
 
@@ -101,31 +100,57 @@ export class Compiler {
   }
 }
 
-function createCompilerHost(
-  compilerOptions: ts.CompilerOptions,
-  externalResolutions: CompilerSettings['externalResolutions']
-): ts.LanguageServiceHost &
+type ModifiedCompilerHost = ts.LanguageServiceHost &
   ts.ModuleResolutionHost &
   Required<Pick<ts.LanguageServiceHost, 'writeFile'>> & {
     setScriptFileNames(files: string[]): void;
-  } {
+  };
+
+function createCompilerHost(
+  compilerOptions: ts.CompilerOptions,
+  externalResolutions: CompilerSettings['externalResolutions']
+): ModifiedCompilerHost {
   const virtualFiles: Record<string, { contents: string; version: number }> =
     {};
   let scriptFileNames: string[] = [];
 
-  return {
+  let resolvedModules: Record<string, ts.ResolvedModuleFull | undefined> = {};
+
+  let cachedFiles: Record<string, string | undefined> = {};
+
+  const host: ModifiedCompilerHost = {
     ...ts.createCompilerHost(compilerOptions),
     getCompilationSettings() {
       return compilerOptions;
     },
     fileExists(fileName) {
-      // console.log('fileExists', fileName)
-      return !!virtualFiles[normalize(fileName)] || ts.sys.fileExists(fileName);
+      const result =
+        !!virtualFiles[normalize(fileName)] || ts.sys.fileExists(fileName);
+      return result;
     },
     readFile(fileName: string) {
-      // console.log('readFile', fileName)
-      const virtual = virtualFiles[normalize(fileName)];
-      return virtual ? virtual.contents : ts.sys.readFile(fileName);
+      const normalized = normalize(fileName);
+      const virtual = virtualFiles[normalized];
+
+      if (virtual) {
+        return virtual.contents;
+      }
+
+      if (normalized in cachedFiles) {
+        const cacheResult = cachedFiles[fileName];
+
+        if (cacheResult) {
+          return cacheResult;
+        }
+      }
+
+      const contents = ts.sys.readFile(fileName);
+
+      if (contents) {
+        cachedFiles[normalized] = contents;
+      }
+
+      return contents;
     },
     writeFile(fileName, contents) {
       fileName = normalize(fileName);
@@ -147,7 +172,6 @@ function createCompilerHost(
     },
     setScriptFileNames(files) {
       scriptFileNames = files.map(normalize);
-      // console.log({ virtualFiles, scriptFileNames })
     },
     getScriptFileNames() {
       return scriptFileNames;
@@ -166,7 +190,7 @@ function createCompilerHost(
           );
     },
     resolveModuleNames(moduleNames, containingFile) {
-      return moduleNames.map((moduleName) => {
+      const mappedModules = moduleNames.map((moduleName) => {
         if (moduleName in externalResolutions) {
           const resolved = externalResolutions[moduleName];
 
@@ -185,13 +209,45 @@ function createCompilerHost(
           };
         }
 
-        return ts.resolveModuleName(
+        // Files that are local to the code block, like './api', should be resolved
+        // more directly rather than triggering a full module resolution search.
+        if (
+          moduleName.startsWith('.') &&
+          containingFile.includes('codeBlock')
+        ) {
+          const containingDir = dirname(containingFile);
+          const newModuleName = join(containingDir, moduleName);
+          const resolvedModule = ts.resolveModuleName(
+            newModuleName,
+            containingFile,
+            compilerOptions,
+            this
+          ).resolvedModule;
+
+          return resolvedModule;
+        }
+
+        const key = `${containingFile}|${moduleName}`;
+
+        if (key in resolvedModules) {
+          return resolvedModules[key];
+        }
+
+        const resolved = ts.resolveModuleName(
           moduleName,
           containingFile,
           compilerOptions,
           this
         ).resolvedModule;
+
+        resolvedModules[key] = resolved;
+
+        return resolved;
       });
+
+      return mappedModules;
     },
   };
+
+  return host;
 }
