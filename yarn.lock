@@ -487,6 +487,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@prettier/sync@npm:^0.5.2":
+  version: 0.5.2
+  resolution: "@prettier/sync@npm:0.5.2"
+  dependencies:
+    make-synchronized: "npm:^0.2.8"
+  peerDependencies:
+    prettier: "*"
+  checksum: 10/172cdc62f4103b022f8e8d0a63839350d97bc51468ea476594bce651c2cda311e4810417f16a3c967941a8493a68468a5df27beea4c85eaeaa37e84be3acf399
+  languageName: node
+  linkType: hard
+
 "@rollup/rollup-android-arm-eabi@npm:4.21.1":
   version: 4.21.1
   resolution: "@rollup/rollup-android-arm-eabi@npm:4.21.1"
@@ -2796,6 +2807,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"make-synchronized@npm:^0.2.8":
+  version: 0.2.9
+  resolution: "make-synchronized@npm:0.2.9"
+  checksum: 10/d12c540719641f05f4e40bae5625b7e5ac9dded364e7f97ef3fd8baa1bcbd016f873c5281e4719e321a612635accf0a9e2c07a37d215240b549b99ed0d8a1b3f
+  languageName: node
+  linkType: hard
+
 "mdast-util-from-markdown@npm:^2.0.0":
   version: 2.0.1
   resolution: "mdast-util-from-markdown@npm:2.0.1"
@@ -4108,6 +4126,7 @@ __metadata:
   resolution: "remark-typescript-tools@workspace:."
   dependencies:
     "@microsoft/tsdoc": "npm:^0.15.0"
+    "@prettier/sync": "npm:^0.5.2"
     "@types/estree": "npm:^1.0.5"
     "@types/node": "npm:^22.5.4"
     "@types/react": "npm:^18.3.5"

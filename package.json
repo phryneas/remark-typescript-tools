@@ -64,6 +64,7 @@
   },
   "dependencies": {
     "@microsoft/tsdoc": "^0.15.0",
+    "@prettier/sync": "^0.5.2",
     "@types/estree": "^1.0.5",
     "@types/unist": "^3.0.3",
     "mdast-util-mdx-jsx": "^3.1.3",
