@@ -1,57 +1,50 @@
 import type { VirtualFiles } from './plugin.js';
-import prettier from 'prettier';
+import type { Options as PrettierOptions } from 'prettier';
+import prettierSync from '@prettier/sync';
 
-export async function defaultPostProcessTs(
+export function defaultPostProcessTs(
   files: VirtualFiles,
   parentFile?: string
-): Promise<VirtualFiles> {
+): VirtualFiles {
   return fromEntries(
-    await Promise.all(
-      Object.entries(files).map(async ([name, file]) => {
-        const prettyCode = await prettify(file.code, name, parentFile || name);
+    Object.entries(files).map(([name, file]) => {
+      const prettyCode = prettify(file.code, name, parentFile || name);
 
-        return [
-          name,
-          {
-            ...file,
-            code: prettyCode.trim(),
-          },
-        ];
-      })
-    )
+      return [
+        name,
+        {
+          ...file,
+          code: prettyCode.trim(),
+        },
+      ];
+    })
   );
 }
 
-export async function defaultPostProcessTranspiledJs(
+export function defaultPostProcessTranspiledJs(
   files: VirtualFiles,
   parentFile?: string
-): Promise<VirtualFiles> {
+): VirtualFiles {
   return fromEntries(
-    await Promise.all(
-      Object.entries(files).map(async ([name, file]) => {
-        const mangledCode = file.code.replace(
-          /(\n\s*|)\/\/ (@ts-ignore|@ts-expect-error).*$/gm,
-          ''
-        );
-        const prettyCode = await prettify(
-          mangledCode,
-          name,
-          parentFile || name
-        );
+    Object.entries(files).map(([name, file]) => {
+      const mangledCode = file.code.replace(
+        /(\n\s*|)\/\/ (@ts-ignore|@ts-expect-error).*$/gm,
+        ''
+      );
+      const prettyCode = prettify(mangledCode, name, parentFile || name);
 
-        return [
-          name.replace(/.t(sx?)$/, '.j$1'),
-          {
-            ...file,
-            code: prettyCode.trim(),
-          },
-        ];
-      })
-    )
+      return [
+        name.replace(/.t(sx?)$/, '.j$1'),
+        {
+          ...file,
+          code: prettyCode.trim(),
+        },
+      ];
+    })
   );
 }
 
-let lastConfig: prettier.Options | null;
+let lastConfig: PrettierOptions | null;
 let lastParentFile: string;
 
 /**
@@ -60,13 +53,9 @@ let lastParentFile: string;
  * @param {string} fileName
  * @param {string} parentFile
  */
-async function prettify(
-  sourceCode: string,
-  fileName: string,
-  parentFile: string
-) {
+function prettify(sourceCode: string, fileName: string, parentFile: string) {
   if (lastParentFile !== parentFile) {
-    lastConfig = await prettier.resolveConfig(parentFile);
+    lastConfig = prettierSync.resolveConfig(parentFile);
   }
   if (!lastConfig) {
     console.error(
@@ -74,7 +63,7 @@ async function prettify(
     );
     return sourceCode;
   }
-  return prettier.format(sourceCode, {
+  return prettierSync.format(sourceCode, {
     ...lastConfig,
     filepath: fileName,
   });
