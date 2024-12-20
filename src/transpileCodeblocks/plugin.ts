@@ -31,7 +31,7 @@ type PostProcessor = (
   files: VirtualFiles,
   parentFile?: string,
   defaultProcessor?: PostProcessor
-) => Promise<VirtualFiles>;
+) => VirtualFiles;
 
 export interface TranspileCodeblocksSettings {
   compilerSettings: CompilerSettings;
@@ -212,7 +212,7 @@ ${lines.slice(Math.max(0, diagnostic.line - 5), diagnostic.line + 6).join('\n')}
     };
   };
 
-export async function defaultAssembleReplacementNodes(
+export function defaultAssembleReplacementNodes(
   node: CodeNode,
   file: VFile,
   virtualFolder: string,
@@ -220,7 +220,7 @@ export async function defaultAssembleReplacementNodes(
   transpilationResult: Record<string, TranspiledFile>,
   postProcessTs: PostProcessor,
   postProcessTranspiledJs: PostProcessor
-): Promise<Node[]> {
+): Node[] {
   return [
     {
       type: 'mdxJsxFlowElement',
@@ -334,11 +334,7 @@ export async function defaultAssembleReplacementNodes(
             {
               ...node,
               value: rearrangeFiles(
-                await postProcessTs(
-                  virtualFiles,
-                  file.path,
-                  defaultPostProcessTs
-                ),
+                postProcessTs(virtualFiles, file.path, defaultPostProcessTs),
                 virtualFolder
               ),
             } satisfies CodeNode as any,
@@ -359,7 +355,7 @@ export async function defaultAssembleReplacementNodes(
                 ),
               }),
               value: rearrangeFiles(
-                await postProcessTranspiledJs(
+                postProcessTranspiledJs(
                   transpilationResult,
                   file.path,
                   defaultPostProcessTranspiledJs
